@@ -314,10 +314,6 @@
                 <p id="activeProjectMeta" class="text-slate-500 mt-1">Plan, prioritize, and accomplish your tasks with ease.</p>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <button id="addProjectQuick" class="dash-btn-primary">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                  Add Project
-                </button>
                 <button id="deleteProjectBtn" class="dash-btn-ghost" title="Delete this project">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
                   <span class="hidden sm:inline">Delete</span>
@@ -609,6 +605,60 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div id="editTaskModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div id="editTaskOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    <div class="relative h-full grid place-items-center p-4">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900">Edit task</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Update the details and save.</p>
+          </div>
+          <button id="editTaskClose" class="w-8 h-8 grid place-items-center rounded-lg hover:bg-slate-100 text-slate-400 text-lg font-bold leading-none transition">&times;</button>
+        </div>
+        <form id="editTaskForm" class="mt-4 space-y-3">
+          <input id="editTaskTitle" type="text" required maxlength="120" placeholder="What needs to be done?"
+            class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+          <div class="flex flex-col sm:flex-row gap-3">
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Priority</span>
+              <select id="editTaskPriority"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition">
+                <option value="High">🔴 High</option>
+                <option value="Medium">🟠 Medium</option>
+                <option value="Low">⚪ Low</option>
+              </select>
+            </label>
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Deadline</span>
+              <input id="editTaskDeadline" type="date"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+            </label>
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Est. time</span>
+              <input id="editTaskEstimate" type="text" maxlength="12" placeholder="e.g. 30m, 2h"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+            </label>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap pt-1">
+            <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
+            <button type="button" id="editImportant" data-on="false" class="tag-toggle">★ Important</button>
+            <button type="button" id="editUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+            <button type="submit" class="add-task-btn ml-auto">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Save changes
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

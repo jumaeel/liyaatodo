@@ -615,6 +615,9 @@
               <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
             </div>
           </div>
+          <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
+            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
           <button class="task-del" data-action="today-remove" title="Remove from today" aria-label="Remove from today">
             <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>`;
@@ -840,6 +843,9 @@
       </div>
       <button class="task-tag ${task.important ? 'on-imp' : ''}" data-action="toggle-important" title="${task.important ? 'Important' : 'Mark important'}" aria-pressed="${task.important}">★</button>
       <button class="task-tag ${task.urgent ? 'on-urg' : ''}" data-action="toggle-urgent" title="${task.urgent ? 'Urgent' : 'Mark urgent'}" aria-pressed="${task.urgent}">⚡</button>
+      <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
+        <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
       <button class="task-del" data-action="delete" title="Delete task" aria-label="Delete task">
         <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>
       </button>`;
@@ -966,6 +972,46 @@
     task[flag] = !task[flag];
     save();
     render();
+  }
+
+  /* ---------- Edit an existing task ---------- */
+  let editingTaskId = null;
+
+  function openEditTask(id) {
+    const task = state.tasks.find((t) => t.id === id);
+    if (!task) return;
+    editingTaskId = id;
+    $('#editTaskTitle').value = task.title;
+    $('#editTaskPriority').value = ['High', 'Medium', 'Low'].includes(task.priority) ? task.priority : 'Medium';
+    $('#editTaskDeadline').value = task.deadline || '';
+    $('#editTaskEstimate').value = task.estimateMin ? formatEstimate(task.estimateMin) : '';
+    $('#editImportant').dataset.on = task.important ? 'true' : 'false';
+    $('#editUrgent').dataset.on = task.urgent ? 'true' : 'false';
+    $('#editTaskModal').classList.remove('hidden');
+    setTimeout(() => $('#editTaskTitle').focus(), 50);
+  }
+
+  function closeEditTask() {
+    $('#editTaskModal').classList.add('hidden');
+    editingTaskId = null;
+  }
+
+  function saveEditTask(e) {
+    e.preventDefault();
+    const task = state.tasks.find((t) => t.id === editingTaskId);
+    if (!task) { closeEditTask(); return; }
+    const title = $('#editTaskTitle').value.trim();
+    if (!title) return;
+    task.title = title;
+    task.priority = ['High', 'Medium', 'Low'].includes($('#editTaskPriority').value) ? $('#editTaskPriority').value : 'Medium';
+    task.deadline = $('#editTaskDeadline').value || null;
+    task.estimateMin = parseEstimate($('#editTaskEstimate').value);
+    task.important = $('#editImportant').dataset.on === 'true';
+    task.urgent = $('#editUrgent').dataset.on === 'true';
+    save();
+    render();
+    closeEditTask();
+    toast('Task updated');
   }
 
   function moveTaskToQuadrant(id, quadKey) {
@@ -1130,7 +1176,7 @@
     });
 
     // --- Eisenhower toggles ---
-    [['#newImportant'], ['#newUrgent']].forEach(([sel]) => {
+    [['#newImportant'], ['#newUrgent'], ['#editImportant'], ['#editUrgent']].forEach(([sel]) => {
       $(sel).addEventListener('click', () => {
         const btn = $(sel);
         btn.dataset.on = btn.dataset.on === 'true' ? 'false' : 'true';
@@ -1166,6 +1212,7 @@
       switch (action.dataset.action) {
         case 'toggle':           toggleTask(id); break;
         case 'delete':           deleteTask(id); break;
+        case 'edit':             openEditTask(id); break;
         case 'toggle-important': toggleTaskFlag(id, 'important'); break;
         case 'toggle-urgent':    toggleTaskFlag(id, 'urgent'); break;
       }
@@ -1182,6 +1229,7 @@
       const id = row.dataset.id;
       if (action.dataset.action === 'today-toggle') { toggleTask(id); renderToday(); renderSidebar(); }
       if (action.dataset.action === 'today-remove') { removeFromToday(id); }
+      if (action.dataset.action === 'edit') { openEditTask(id); }
     });
 
     // --- Today: pick tasks ---
@@ -1193,7 +1241,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeTaskPicker();
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); }
     });
 
     // --- Drag & drop ---
@@ -1245,11 +1293,6 @@
       if (e.key === STORAGE_KEY) { load(); render(); }
     });
 
-    // --- Quick-add project button on dashboard ---
-    $('#addProjectQuick').addEventListener('click', () => {
-      $('#newProjectInput').focus();
-    });
-
     // --- User profile ---
     $('#userBtn').addEventListener('click', openUserModal);
     $('#userModalClose').addEventListener('click', closeUserModal);
@@ -1259,6 +1302,11 @@
     // --- Cloud sign in / out ---
     $('#cloudSignInBtn').addEventListener('click', cloudSignIn);
     $('#cloudSignOutBtn').addEventListener('click', cloudSignOut);
+
+    // --- Edit task modal ---
+    $('#editTaskForm').addEventListener('submit', saveEditTask);
+    $('#editTaskClose').addEventListener('click', closeEditTask);
+    $('#editTaskOverlay').addEventListener('click', closeEditTask);
 
     // --- Dark mode toggle ---
     $('#themeToggle').addEventListener('click', () => {
