@@ -1324,13 +1324,8 @@
     });
 
     // --- Dashboard quick buttons ---
-    $('#dashNewProject').addEventListener('click', () => {
-      $('#newProjectInput').focus();
-      closeSidebar();
-    });
-    $('#dashOpenTasks').addEventListener('click', () => {
-      if (state.projects.length > 0) selectProject(state.activeProjectId || state.projects[0].id);
-    });
+    $('#dashTodayFocus').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
+    $('#dashHowTo').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
 
     // --- Add project ---
     $('#addProjectForm').addEventListener('submit', (e) => {
