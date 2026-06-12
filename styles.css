@@ -8,6 +8,14 @@ html, body { height: 100%; }
 html:fullscreen { background: #f5f6fb; }
 html.dark:fullscreen { background: #0b1120; }
 
+/* Fullscreen Today's Focus: hide sidebar + top bar, show only the content */
+html:fullscreen #sidebar,
+html:-webkit-full-screen #sidebar { display: none !important; }
+html:fullscreen header,
+html:-webkit-full-screen header { display: none !important; }
+html:fullscreen #backdrop,
+html:-webkit-full-screen #backdrop { display: none !important; }
+
 /* Smooth percentage animation for the conic ring */
 @property --pct { syntax: '<number>'; inherits: false; initial-value: 0; }
 
