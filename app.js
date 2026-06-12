@@ -601,21 +601,32 @@
     return `${d.getFullYear()}-${m}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  // Read-state log: which notification keys were marked read (resets daily).
+  function notifReadLog() {
+    let log;
+    try { log = JSON.parse(localStorage.getItem('liyaa.notifRead') || 'null'); } catch { log = null; }
+    if (!log || log.date !== isoToday()) log = { date: isoToday(), keys: [] };
+    return log;
+  }
+  function saveNotifReadLog(log) {
+    try { localStorage.setItem('liyaa.notifRead', JSON.stringify(log)); } catch {}
+  }
+
   function buildNotifications() {
     const items = [];
     const open = state.tasks.filter((t) => !t.isCompleted);
     const pName = (id) => (state.projects.find((p) => p.id === id) || {}).name || '';
 
     open.filter(isOverdue).forEach((t) => items.push({
-      icon: '🔴', tone: 'red', pid: t.projectId,
+      key: 'over-' + t.id, icon: '🔴', tone: 'red', pid: t.projectId,
       title: t.title, sub: `Overdue — was due ${formatDate(t.deadline)} · ${pName(t.projectId)}`,
     }));
     open.filter((t) => t.deadline === isoToday()).forEach((t) => items.push({
-      icon: '🟠', tone: 'orange', pid: t.projectId,
+      key: 'due-' + t.id, icon: '🟠', tone: 'orange', pid: t.projectId,
       title: t.title, sub: `Due today · ${pName(t.projectId)}`,
     }));
     open.filter((t) => t.deadline === isoToday(1)).forEach((t) => items.push({
-      icon: '🔵', tone: 'blue', pid: t.projectId,
+      key: 'tom-' + t.id, icon: '🔵', tone: 'blue', pid: t.projectId,
       title: t.title, sub: `Due tomorrow · ${pName(t.projectId)}`,
     }));
 
@@ -623,27 +634,40 @@
     const todayTasks = state.todayTaskIds.map((id) => state.tasks.find((t) => t.id === id)).filter(Boolean);
     const left = todayTasks.filter((t) => !t.isCompleted).length;
     if (todayTasks.length > 0 && left > 0) {
-      items.push({ icon: '🎯', tone: 'indigo', goto: 'today',
+      items.push({ key: 'focus-left', icon: '🎯', tone: 'indigo', goto: 'today',
         title: `${left} focus task${left === 1 ? '' : 's'} left today`, sub: "Open Today's Focus to finish strong" });
     } else if (todayTasks.length > 0 && left === 0) {
-      items.push({ icon: '🎉', tone: 'green', goto: 'today',
+      items.push({ key: 'focus-done', icon: '🎉', tone: 'green', goto: 'today',
         title: 'Today\'s Focus complete!', sub: 'All your picked tasks are done — great work' });
     } else if (todayTasks.length === 0 && open.length > 0) {
-      items.push({ icon: '🎯', tone: 'indigo', goto: 'today',
+      items.push({ key: 'focus-none', icon: '🎯', tone: 'indigo', goto: 'today',
         title: 'No focus tasks picked yet', sub: 'Pick up to 5 tasks to focus on today' });
     }
     return items;
+  }
+
+  function markAllNotifsRead() {
+    const log = notifReadLog();
+    buildNotifications().forEach((n) => { if (!log.keys.includes(n.key)) log.keys.push(n.key); });
+    saveNotifReadLog(log);
+    renderNotifs();
+    toast('All notifications marked as read');
   }
 
   function renderNotifs() {
     const badge = $('#notifBadge');
     if (!badge) return;
     const items = buildNotifications();
-    // Badge counts only actionable alerts (not the celebration)
-    const alerts = items.filter((n) => n.tone !== 'green').length;
+    const readKeys = new Set(notifReadLog().keys);
+    items.forEach((n) => { n.read = readKeys.has(n.key); });
+    // Badge counts only unread, actionable alerts (not the celebration)
+    const alerts = items.filter((n) => n.tone !== 'green' && !n.read).length;
     badge.textContent = alerts > 9 ? '9+' : alerts;
     badge.classList.toggle('hidden', alerts === 0);
-    $('#notifCount').textContent = items.length ? `${items.length} item${items.length === 1 ? '' : 's'}` : '';
+    const unread = items.filter((n) => !n.read).length;
+    $('#notifCount').textContent = items.length ? (unread ? `${unread} unread` : 'all read') : '';
+    const markBtn = $('#notifMarkRead');
+    if (markBtn) markBtn.classList.toggle('hidden', unread === 0);
 
     const list = $('#notifList');
     if (items.length === 0) {
@@ -660,17 +684,22 @@
     list.innerHTML = '';
     items.forEach((n) => {
       const row = document.createElement('button');
-      row.className = 'w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition text-left notif-row';
+      row.className = 'w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition text-left notif-row' + (n.read ? ' opacity-50' : '');
       row.innerHTML = `
         <span class="w-9 h-9 grid place-items-center rounded-xl text-base shrink-0 ${tones[n.tone] || tones.indigo}">${n.icon}</span>
-        <span class="min-w-0">
+        <span class="min-w-0 flex-1">
           <span class="block text-sm font-semibold text-slate-800 truncate">${escapeHTML(n.title)}</span>
           <span class="block text-xs text-slate-400 mt-0.5">${escapeHTML(n.sub)}</span>
-        </span>`;
+        </span>
+        ${n.read ? '' : '<span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-1.5" title="Unread"></span>'}`;
       row.addEventListener('click', () => {
+        // Opening a notification marks it read.
+        const log = notifReadLog();
+        if (!log.keys.includes(n.key)) { log.keys.push(n.key); saveNotifReadLog(log); }
         closeNotifPanel();
         if (n.goto === 'today') { switchScreen('today'); renderToday(); renderSidebar(); }
         else if (n.pid) selectProject(n.pid);
+        renderNotifs();
       });
       list.appendChild(row);
     });
@@ -1668,6 +1697,7 @@
     // --- Notifications ---
     $('#notifBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleNotifPanel(); });
     $('#notifEnablePush').addEventListener('click', enablePushReminders);
+    $('#notifMarkRead').addEventListener('click', (e) => { e.stopPropagation(); markAllNotifsRead(); });
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#notifPanel') && !e.target.closest('#notifBtn')) closeNotifPanel();
     });

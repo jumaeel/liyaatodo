@@ -143,9 +143,12 @@
 
             <!-- Notification panel -->
             <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
-              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
                 <p class="font-extrabold text-slate-900 text-sm">Notifications</p>
-                <span id="notifCount" class="text-xs text-slate-400"></span>
+                <div class="flex items-center gap-2.5">
+                  <span id="notifCount" class="text-xs text-slate-400"></span>
+                  <button id="notifMarkRead" class="hidden text-xs font-bold text-indigo-600 hover:text-indigo-700 transition">Mark all read</button>
+                </div>
               </div>
               <div id="notifList" class="max-h-80 overflow-y-auto p-2"></div>
               <div class="px-4 py-3 border-t border-slate-100">
