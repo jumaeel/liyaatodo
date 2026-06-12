@@ -118,9 +118,10 @@
         </button>
         <label class="relative flex-1 max-w-md">
           <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input id="searchInput" type="search" placeholder="Search tasks…"
+          <input id="searchInput" type="search" placeholder="Select a project to search…" disabled
             class="w-full pl-10 pr-3 py-2.5 text-sm rounded-full bg-slate-100 border border-transparent
-                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition
+                   disabled:opacity-60 disabled:cursor-not-allowed" />
         </label>
         <div class="ml-auto flex items-center gap-2.5">
           <a id="feedbackBtn" href="https://t.me/aleppowashington" target="_blank" rel="noopener noreferrer"

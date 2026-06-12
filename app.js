@@ -323,6 +323,18 @@
     $('#dashboardNav').classList.toggle('is-active', name === 'dashboard');
     $('#todayNav').classList.toggle('is-active', name === 'today');
     $('#guideNav').classList.toggle('is-active', name === 'guide');
+
+    // Search only works while viewing a project.
+    const search = $('#searchInput');
+    if (search) {
+      const onProject = name === 'project';
+      search.disabled = !onProject;
+      search.placeholder = onProject ? 'Search tasks…' : 'Select a project to search…';
+      if (!onProject) {
+        search.value = '';
+        $$('.task-row').forEach((row) => row.style.opacity = '');
+      }
+    }
     closeSidebar();
   }
 
@@ -1266,16 +1278,15 @@
       });
     });
 
-    // --- Search (navigate to project screen, focus task form) ---
+    // --- Search (active only on the project screen) ---
     $('#searchInput').addEventListener('input', (e) => {
+      if (screen !== 'project') return;
       const q = e.target.value.trim().toLowerCase();
-      if (!q) return;
-      if (screen !== 'project') { switchScreen('project'); render(); }
-      // Highlight matching tasks
+      // Dim tasks that don't match (empty query restores all).
       $$('.task-row').forEach((row) => {
         const title = row.querySelector('.task-title');
         if (!title) return;
-        const matches = title.textContent.toLowerCase().includes(q);
+        const matches = !q || title.textContent.toLowerCase().includes(q);
         row.style.opacity = matches ? '1' : '0.3';
       });
     });
