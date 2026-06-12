@@ -1,11 +1,12 @@
 /* Liyaatodo · service worker — network-first app shell, offline fallback */
-const CACHE = 'liyaatodo-v4';
+const CACHE = 'liyaatodo-v5';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './manifest.json',
+  './logo-mark.svg',
 ];
 
 self.addEventListener('install', (event) => {
