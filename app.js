@@ -463,24 +463,10 @@
       });
     });
 
-    // Upgrade modal
-    $('#openUpgrade').addEventListener('click', openUpgrade);
-    $('#upgradeModal').addEventListener('click', (e) => {
-      if (e.target.closest('[data-close]')) { closeUpgrade(); return; }
-      const bill = e.target.closest('[data-billing]');
-      if (bill) setBilling(bill.dataset.billing);
-      const cta = e.target.closest('.plan-cta');
-      if (cta) { closeUpgrade(); toast('🚀 Trials aren’t wired up in this demo'); }
-    });
-
     // Mobile sidebar
     $('#menuToggle').addEventListener('click', openSidebar);
     $('#backdrop').addEventListener('click', closeSidebar);
-    window.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape') return;
-      if (!$('#upgradeModal').classList.contains('hidden')) closeUpgrade();
-      else closeSidebar();
-    });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
     // Keep multiple tabs in sync.
     window.addEventListener('storage', (e) => {
@@ -501,26 +487,6 @@
     if (window.innerWidth >= 1024) return; // lg: sidebar is static
     $('#sidebar').classList.add('-translate-x-full');
     $('#backdrop').classList.add('hidden');
-  }
-
-  /* ---------- Upgrade modal ---------- */
-  const PRICES = {
-    monthly: { basic: '$6', super: '$25' },
-    yearly:  { basic: '$5', super: '$21' }, // ~17% off, billed annually
-  };
-  function openUpgrade() {
-    $('#upgradeModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    closeSidebar();
-  }
-  function closeUpgrade() {
-    $('#upgradeModal').classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-  function setBilling(cycle) {
-    if (!PRICES[cycle]) return;
-    $$('[data-price]').forEach((el) => { el.textContent = PRICES[cycle][el.dataset.price]; });
-    $$('.bill-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.billing === cycle));
   }
 
   /* ---------- Toast ---------- */
