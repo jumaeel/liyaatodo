@@ -884,6 +884,14 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 .dark #feedbackBtn { background: #2a2f63 !important; color: #c7d2fe !important; }
 .dark #feedbackBtn:hover { background: #343b7a !important; }
 
+/* Notification panel tone chips */
+.dark .notif-row .bg-red-50 { background: rgba(239,68,68,.15) !important; }
+.dark .notif-row .bg-orange-50 { background: rgba(249,115,22,.15) !important; }
+.dark .notif-row .bg-blue-50 { background: rgba(59,130,246,.15) !important; }
+.dark .notif-row .bg-indigo-50 { background: rgba(99,102,241,.18) !important; }
+.dark .notif-row .bg-green-50 { background: rgba(34,197,94,.15) !important; }
+.dark .notif-row:hover { background: #243044 !important; }
+
 /* Scrollbars */
 .dark ::-webkit-scrollbar-thumb { background: #334155; }
 .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }

@@ -350,6 +350,7 @@
   function render() {
     renderUser();
     renderSidebar();
+    renderNotifs();
     if (screen === 'dashboard') renderDashboard();
     if (screen === 'today') renderToday();
     if (screen === 'project') {
@@ -586,6 +587,144 @@
         projEl.appendChild(row);
       });
     }
+  }
+
+  /* ============================================================
+     NOTIFICATIONS
+     In-app bell (overdue / due today / due tomorrow / focus
+     reminders) + optional browser notifications while app is open.
+     ============================================================ */
+  function isoToday(offset = 0) {
+    const d = todayStart();
+    d.setDate(d.getDate() + offset);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function buildNotifications() {
+    const items = [];
+    const open = state.tasks.filter((t) => !t.isCompleted);
+    const pName = (id) => (state.projects.find((p) => p.id === id) || {}).name || '';
+
+    open.filter(isOverdue).forEach((t) => items.push({
+      icon: '🔴', tone: 'red', pid: t.projectId,
+      title: t.title, sub: `Overdue — was due ${formatDate(t.deadline)} · ${pName(t.projectId)}`,
+    }));
+    open.filter((t) => t.deadline === isoToday()).forEach((t) => items.push({
+      icon: '🟠', tone: 'orange', pid: t.projectId,
+      title: t.title, sub: `Due today · ${pName(t.projectId)}`,
+    }));
+    open.filter((t) => t.deadline === isoToday(1)).forEach((t) => items.push({
+      icon: '🔵', tone: 'blue', pid: t.projectId,
+      title: t.title, sub: `Due tomorrow · ${pName(t.projectId)}`,
+    }));
+
+    // Today's Focus status
+    const todayTasks = state.todayTaskIds.map((id) => state.tasks.find((t) => t.id === id)).filter(Boolean);
+    const left = todayTasks.filter((t) => !t.isCompleted).length;
+    if (todayTasks.length > 0 && left > 0) {
+      items.push({ icon: '🎯', tone: 'indigo', goto: 'today',
+        title: `${left} focus task${left === 1 ? '' : 's'} left today`, sub: "Open Today's Focus to finish strong" });
+    } else if (todayTasks.length > 0 && left === 0) {
+      items.push({ icon: '🎉', tone: 'green', goto: 'today',
+        title: 'Today\'s Focus complete!', sub: 'All your picked tasks are done — great work' });
+    } else if (todayTasks.length === 0 && open.length > 0) {
+      items.push({ icon: '🎯', tone: 'indigo', goto: 'today',
+        title: 'No focus tasks picked yet', sub: 'Pick up to 5 tasks to focus on today' });
+    }
+    return items;
+  }
+
+  function renderNotifs() {
+    const badge = $('#notifBadge');
+    if (!badge) return;
+    const items = buildNotifications();
+    // Badge counts only actionable alerts (not the celebration)
+    const alerts = items.filter((n) => n.tone !== 'green').length;
+    badge.textContent = alerts > 9 ? '9+' : alerts;
+    badge.classList.toggle('hidden', alerts === 0);
+    $('#notifCount').textContent = items.length ? `${items.length} item${items.length === 1 ? '' : 's'}` : '';
+
+    const list = $('#notifList');
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-center text-sm text-slate-400 py-8">All clear — nothing needs your attention 🎈</p>';
+      return;
+    }
+    const tones = {
+      red:    'bg-red-50 text-red-600',
+      orange: 'bg-orange-50 text-orange-600',
+      blue:   'bg-blue-50 text-blue-600',
+      indigo: 'bg-indigo-50 text-indigo-600',
+      green:  'bg-green-50 text-green-600',
+    };
+    list.innerHTML = '';
+    items.forEach((n) => {
+      const row = document.createElement('button');
+      row.className = 'w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition text-left notif-row';
+      row.innerHTML = `
+        <span class="w-9 h-9 grid place-items-center rounded-xl text-base shrink-0 ${tones[n.tone] || tones.indigo}">${n.icon}</span>
+        <span class="min-w-0">
+          <span class="block text-sm font-semibold text-slate-800 truncate">${escapeHTML(n.title)}</span>
+          <span class="block text-xs text-slate-400 mt-0.5">${escapeHTML(n.sub)}</span>
+        </span>`;
+      row.addEventListener('click', () => {
+        closeNotifPanel();
+        if (n.goto === 'today') { switchScreen('today'); renderToday(); renderSidebar(); }
+        else if (n.pid) selectProject(n.pid);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function toggleNotifPanel() {
+    const panel = $('#notifPanel');
+    const willOpen = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden');
+    if (willOpen) renderNotifs();
+  }
+  function closeNotifPanel() { $('#notifPanel').classList.add('hidden'); }
+
+  /* --- Browser notifications (fires while the app is open) --- */
+  function pushReminderSupported() { return 'Notification' in window; }
+
+  function syncPushBtn() {
+    const btn = $('#notifEnablePush');
+    if (!btn) return;
+    if (!pushReminderSupported()) { btn.textContent = 'Browser reminders not supported here'; btn.disabled = true; return; }
+    if (Notification.permission === 'granted') { btn.textContent = '✅ Browser reminders are on'; btn.disabled = true; }
+    else if (Notification.permission === 'denied') { btn.textContent = 'Reminders blocked in browser settings'; btn.disabled = true; }
+    else { btn.textContent = '🔔 Enable browser reminders'; btn.disabled = false; }
+  }
+
+  function enablePushReminders() {
+    if (!pushReminderSupported()) return;
+    Notification.requestPermission().then((perm) => {
+      syncPushBtn();
+      if (perm === 'granted') {
+        toast('🔔 Reminders on — you\'ll be notified about deadlines');
+        checkDeadlineReminders();
+      }
+    });
+  }
+
+  // Fire each reminder at most once per task per day.
+  function checkDeadlineReminders() {
+    if (!pushReminderSupported() || Notification.permission !== 'granted') return;
+    let log;
+    try { log = JSON.parse(localStorage.getItem('liyaa.notified') || 'null'); } catch { log = null; }
+    if (!log || log.date !== isoToday()) log = { date: isoToday(), ids: [] };
+
+    const open = state.tasks.filter((t) => !t.isCompleted);
+    const fire = (key, title, body) => {
+      if (log.ids.includes(key)) return;
+      log.ids.push(key);
+      try { new Notification(title, { body, icon: 'logo-mark.svg', badge: 'logo-mark.svg' }); } catch {}
+    };
+
+    open.filter(isOverdue).forEach((t) => fire('over-' + t.id, '🔴 Overdue: ' + t.title, `Was due ${formatDate(t.deadline)} — open Liyaatodo to finish it.`));
+    open.filter((t) => t.deadline === isoToday()).forEach((t) => fire('due-' + t.id, '🟠 Due today: ' + t.title, 'This task\'s deadline is today.'));
+
+    try { localStorage.setItem('liyaa.notified', JSON.stringify(log)); } catch {}
   }
 
   /* ---------- Fullscreen focus mode ---------- */
@@ -1442,7 +1581,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); }
     });
 
     // --- Drag & drop ---
@@ -1526,6 +1665,13 @@
     $('#renameProjectClose').addEventListener('click', closeRenameProject);
     $('#renameProjectOverlay').addEventListener('click', closeRenameProject);
 
+    // --- Notifications ---
+    $('#notifBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleNotifPanel(); });
+    $('#notifEnablePush').addEventListener('click', enablePushReminders);
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#notifPanel') && !e.target.closest('#notifBtn')) closeNotifPanel();
+    });
+
     // --- Dark mode toggle ---
     $('#themeToggle').addEventListener('click', () => {
       const isDark = document.documentElement.classList.toggle('dark');
@@ -1586,6 +1732,11 @@
     quoteIdx = Math.floor(Date.now() / 300000) % QUOTES.length;
     renderQuote();
     setInterval(rotateQuote, 300000);
+
+    // Deadline reminders: browser notifications (if allowed) + badge refresh.
+    syncPushBtn();
+    checkDeadlineReminders();
+    setInterval(() => { checkDeadlineReminders(); renderNotifs(); }, 600000); // every 10 min
 
     // Connect to the cloud (Google sign-in + sync) if it's configured.
     initCloud();
