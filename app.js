@@ -32,6 +32,43 @@
       { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
     ));
 
+  /* ---------- Time estimates ---------- */
+  // Parse "30m", "2h", "1h30m", "1.5h", "90" → minutes (or null).
+  function parseEstimate(input) {
+    if (input == null) return null;
+    const s = String(input).trim().toLowerCase();
+    if (!s) return null;
+    if (/^\d+(\.\d+)?$/.test(s)) {            // bare number = minutes
+      const n = Math.round(parseFloat(s));
+      return n > 0 ? n : null;
+    }
+    let total = 0, matched = false;
+    const h = s.match(/(\d+(?:\.\d+)?)\s*h/);
+    const m = s.match(/(\d+(?:\.\d+)?)\s*m/);
+    if (h) { total += parseFloat(h[1]) * 60; matched = true; }
+    if (m) { total += parseFloat(m[1]);       matched = true; }
+    if (!matched) return null;
+    total = Math.round(total);
+    return total > 0 ? total : null;
+  }
+
+  // minutes → "1h 30m" / "45m" / "2h"
+  function formatEstimate(min) {
+    if (!min || min <= 0) return '';
+    const h = Math.floor(min / 60), m = min % 60;
+    if (h && m) return `${h}h ${m}m`;
+    if (h) return `${h}h`;
+    return `${m}m`;
+  }
+
+  // Small inline clock badge for a task's estimate (empty string if none).
+  const estBadge = (task) => task.estimateMin
+    ? `<span class="est"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${escapeHTML(formatEstimate(task.estimateMin))}</span>`
+    : '';
+
+  // Sum estimate minutes over a list of tasks.
+  const sumEstimate = (tasks) => tasks.reduce((s, t) => s + (t.estimateMin || 0), 0);
+
   /* ---------- Persistence ---------- */
   // Local write only.
   function saveLocal() {
@@ -79,6 +116,7 @@
     state.tasks.forEach((t) => {
       if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
       if (typeof t.urgent !== 'boolean') t.urgent = false;
+      if (typeof t.estimateMin !== 'number' || t.estimateMin <= 0) t.estimateMin = null;
     });
     // Clean up stale todayTaskIds.
     const taskIds = new Set(state.tasks.map((t) => t.id));
@@ -419,7 +457,7 @@
         row.innerHTML = `
           <div class="bc-label">
             <span class="truncate max-w-[150px]">${escapeHTML(proj.name)}</span>
-            <span class="text-slate-400 ml-2 shrink-0">${d}/${t} · ${p}%</span>
+            <span class="text-slate-400 ml-2 shrink-0">${d}/${t} · ${p}%${sumEstimate(tasks) > 0 ? ` · ⏱ ${formatEstimate(sumEstimate(tasks))}` : ''}</span>
           </div>
           <div class="bc-track">
             <div class="bc-fill" style="width:${p}%"></div>
@@ -447,16 +485,38 @@
         </div>`;
     });
 
-    // Matrix breakdown
+    // Matrix breakdown (detailed — names the actual tasks in each quadrant)
     const matEl = $('#matrixBreakdown');
     matEl.innerHTML = '';
+    const projName = (id) => (state.projects.find((p) => p.id === id) || {}).name || '';
     QUADRANTS.forEach((q) => {
-      const cnt = allTasks.filter((t) => inQuadrant(t, q)).length;
+      const inQ = allTasks.filter((t) => inQuadrant(t, q));
+      const active = inQ.filter((t) => !t.isCompleted);
+      const shown = active.slice(0, 4);
+      const more = active.length - shown.length;
+      const rows = shown.map((t) => `
+        <li class="mq-item">
+          <span class="mq-bullet"></span>
+          <span class="mq-task">${escapeHTML(t.title)}</span>
+          <span class="mq-proj">${escapeHTML(projName(t.projectId))}</span>
+          ${t.estimateMin ? `<span class="mq-time">${escapeHTML(formatEstimate(t.estimateMin))}</span>` : ''}
+        </li>`).join('');
+
+      const body = active.length === 0
+        ? `<p class="mq-empty">${inQ.length > 0 ? 'All done here — nicely cleared. ✓' : 'Nothing here yet.'}</p>`
+        : `<ul class="mq-list">${rows}${more > 0 ? `<li class="mq-more">+${more} more task${more === 1 ? '' : 's'}</li>` : ''}</ul>`;
+
       matEl.innerHTML += `
-        <div class="mini-quad ${q.cls}">
-          <div class="text-lg">${q.icon}</div>
-          <div class="font-bold">${q.title}</div>
-          <div class="opacity-70 text-xs">${cnt} task${cnt === 1 ? '' : 's'}</div>
+        <div class="mq-card ${q.cls}">
+          <div class="mq-top">
+            <span class="mq-dot"></span>
+            <div class="min-w-0 flex-1">
+              <p class="mq-lead">${q.lead}</p>
+              <p class="mq-advice">${q.advice}</p>
+            </div>
+            <span class="mq-count">${active.length}</span>
+          </div>
+          ${body}
         </div>`;
     });
 
@@ -483,7 +543,7 @@
               <div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                 <div class="h-full rounded-full bg-indigo-500 transition-all duration-500" style="width:${p}%;"></div>
               </div>
-              <span class="text-xs text-slate-400 shrink-0">${d}/${t}</span>
+              <span class="text-xs text-slate-400 shrink-0">${d}/${t}${sumEstimate(tasks) > 0 ? ` · ⏱ ${formatEstimate(sumEstimate(tasks))}` : ''}</span>
             </div>
           </div>
           <svg class="w-4 h-4 text-slate-300 group-hover:text-slate-400 shrink-0 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>`;
@@ -551,6 +611,7 @@
             <p class="task-title">${escapeHTML(task.title)}</p>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
               <span class="badge badge-${task.priority}">${task.priority}</span>
+              ${estBadge(task)}
               <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
             </div>
           </div>
@@ -632,6 +693,7 @@
         btn.innerHTML = `
           <span class="w-2 h-2 rounded-full shrink-0 ${prDot}"></span>
           <span class="flex-1 text-sm font-medium text-slate-700 truncate">${escapeHTML(task.title)}</span>
+          ${task.estimateMin ? `<span class="text-xs font-medium text-slate-400 shrink-0">${escapeHTML(formatEstimate(task.estimateMin))}</span>` : ''}
           <span class="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 shrink-0 transition">Add →</span>`;
         btn.addEventListener('click', () => {
           if (state.todayTaskIds.length >= 5) { toast('Today is full — max 5 tasks'); return; }
@@ -666,6 +728,8 @@
     else {
       meta = `${tasks.length} task${tasks.length === 1 ? '' : 's'} · ${done} done`;
       if (overdue > 0) meta += ` · ${overdue} overdue`;
+      const totalMin = sumEstimate(tasks);
+      if (totalMin > 0) meta += ` · ⏱ ${formatEstimate(totalMin)} planned`;
     }
     $('#activeProjectMeta').textContent = meta;
 
@@ -692,6 +756,19 @@
     else if (pct >= 50) sub = 'Over halfway there!';
     else sub = "Let's build some momentum.";
     $('#progressSubLabel').textContent = sub;
+
+    // Time planned vs. remaining for this project.
+    const totalMin = sumEstimate(tasks);
+    const remainingMin = sumEstimate(tasks.filter((t) => !t.isCompleted));
+    const timeLabel = $('#progressTimeLabel');
+    if (totalMin > 0) {
+      timeLabel.classList.remove('hidden');
+      $('#progressTimeText').textContent = remainingMin > 0
+        ? `${formatEstimate(remainingMin)} of work left · ${formatEstimate(totalMin)} planned total`
+        : `All ${formatEstimate(totalMin)} of planned work done`;
+    } else {
+      timeLabel.classList.add('hidden');
+    }
   }
 
   // Show either the List or the Matrix; only one is in the DOM flow at a time.
@@ -757,6 +834,7 @@
         <p class="task-title">${escapeHTML(task.title)}</p>
         <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
           <span class="badge badge-${task.priority}">${task.priority}</span>
+          ${estBadge(task)}
           ${dueHTML}
         </div>
       </div>
@@ -770,10 +848,10 @@
 
   /* ---------- Eisenhower Matrix ---------- */
   const QUADRANTS = [
-    { key: 'do',       cls: 'do',       icon: '🟢', title: 'Do',       sub: 'Important · Urgent',         imp: true,  urg: true  },
-    { key: 'schedule', cls: 'schedule', icon: '🟠', title: 'Schedule', sub: 'Important · Not urgent',     imp: true,  urg: false },
-    { key: 'delegate', cls: 'delegate', icon: '🔵', title: 'Delegate', sub: 'Not important · Urgent',     imp: false, urg: true  },
-    { key: 'del',      cls: 'del',      icon: '🔴', title: 'Delete',   sub: 'Not important · Not urgent', imp: false, urg: false },
+    { key: 'do',       cls: 'do',       icon: '🟢', title: 'Do',       sub: 'Important · Urgent',         lead: "Important & urgent for you",        advice: 'Do these first',              imp: true,  urg: true  },
+    { key: 'schedule', cls: 'schedule', icon: '🟠', title: 'Schedule', sub: 'Important · Not urgent',     lead: "Important, but not urgent",         advice: 'Schedule time for these',     imp: true,  urg: false },
+    { key: 'delegate', cls: 'delegate', icon: '🔵', title: 'Delegate', sub: 'Not important · Urgent',     lead: "Urgent, but not important",         advice: 'Delegate or knock out fast',  imp: false, urg: true  },
+    { key: 'del',      cls: 'del',      icon: '🔴', title: 'Delete',   sub: 'Not important · Not urgent', lead: "Neither important nor urgent",      advice: 'Drop or defer these',         imp: false, urg: false },
   ];
   const inQuadrant = (t, q) => t.important === q.imp && t.urgent === q.urg;
 
@@ -855,7 +933,7 @@
     closeSidebar();
   }
 
-  function addTask({ title, priority, deadline, urgent, important }) {
+  function addTask({ title, priority, deadline, urgent, important, estimateMin }) {
     title = title.trim();
     if (!title || !state.activeProjectId) return;
     const task = {
@@ -867,6 +945,7 @@
       isCompleted: false,
       urgent: !!urgent,
       important: !!important,
+      estimateMin: estimateMin || null,
     };
     state.tasks.push(task);
     save();
@@ -1067,9 +1146,11 @@
         deadline: $('#taskDeadline').value,
         important: $('#newImportant').dataset.on === 'true',
         urgent: $('#newUrgent').dataset.on === 'true',
+        estimateMin: parseEstimate($('#taskEstimate').value),
       });
       $('#taskTitle').value = '';
       $('#taskDeadline').value = '';
+      $('#taskEstimate').value = '';
       $('#newImportant').dataset.on = 'false';
       $('#newUrgent').dataset.on = 'false';
       $('#taskTitle').focus();
@@ -1178,6 +1259,13 @@
     // --- Cloud sign in / out ---
     $('#cloudSignInBtn').addEventListener('click', cloudSignIn);
     $('#cloudSignOutBtn').addEventListener('click', cloudSignOut);
+
+    // --- Dark mode toggle ---
+    $('#themeToggle').addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('liyaa.theme', isDark ? 'dark' : 'light'); } catch {}
+      toast(isDark ? '🌙 Dark mode on' : '☀️ Light mode on');
+    });
   }
 
   function syncFilterChips() {

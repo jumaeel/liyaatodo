@@ -240,6 +240,15 @@ button, a, input, select, .project-item, .task-row {
 .due { font-size: 0.75rem; color: #64748b; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .due.overdue { color: #dc2626; font-weight: 700; }
 
+/* Time estimate badge */
+.est {
+  font-size: 0.72rem; font-weight: 600;
+  color: #4750db; background: #eef0fe;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+}
+.est svg { width: 12px; height: 12px; }
+
 .task-del {
   flex-shrink: 0;
   width: 32px; height: 32px;
@@ -470,6 +479,31 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 .mini-quad.delegate { background: #eef3fc; color: #1e40af; }
 .mini-quad.del      { background: #fdf0f0; color: #991b1b; }
 
+/* Detailed Focus Matrix cards (dashboard) */
+.mq-card { border-radius: 14px; padding: .9rem 1rem; border: 1px solid; }
+.mq-top { display: flex; align-items: flex-start; gap: .6rem; }
+.mq-dot { width: 12px; height: 12px; border-radius: 999px; margin-top: 3px; flex-shrink: 0; }
+.mq-lead { font-weight: 700; font-size: .88rem; color: #1e293b; line-height: 1.25; }
+.mq-advice { font-size: .72rem; color: #64748b; margin-top: 1px; }
+.mq-count { margin-left: auto; font-weight: 800; font-size: 1.15rem; color: #0f172a; line-height: 1; }
+.mq-list { margin-top: .7rem; display: flex; flex-direction: column; gap: .35rem; }
+.mq-item { display: flex; align-items: center; gap: .45rem; min-width: 0; }
+.mq-bullet { width: 5px; height: 5px; border-radius: 999px; background: currentColor; opacity: .45; flex-shrink: 0; }
+.mq-task { font-size: .82rem; color: #334155; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mq-proj { font-size: .68rem; color: #94a3b8; background: rgba(15,23,42,.05); padding: 1px 7px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+.mq-time { font-size: .68rem; color: #64748b; font-weight: 600; margin-left: auto; flex-shrink: 0; white-space: nowrap; }
+.mq-empty { margin-top: .55rem; font-size: .78rem; color: #94a3b8; }
+.mq-more { font-size: .72rem; color: #64748b; font-weight: 600; padding-left: .95rem; }
+
+.mq-card.do       { background: #f0faf5; border-color: #cdeadd; color: #15803d; }
+.mq-card.do       .mq-dot { background: #22c55e; }
+.mq-card.schedule { background: #fdf4ef; border-color: #f6d6c4; color: #c2620c; }
+.mq-card.schedule .mq-dot { background: #f59e0b; }
+.mq-card.delegate { background: #eef3fc; border-color: #cfddf4; color: #2563eb; }
+.mq-card.delegate .mq-dot { background: #3b82f6; }
+.mq-card.del      { background: #fdf0f0; border-color: #f5cccc; color: #dc2626; }
+.mq-card.del      .mq-dot { background: #ef4444; }
+
 /* Dashboard buttons */
 .dash-btn-primary {
   display: inline-flex; align-items: center; gap: .4rem;
@@ -540,3 +574,122 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
   from { opacity: 0; transform: translate(-50%, -48%) scale(.96); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
+
+/* ============================================================
+   DARK MODE
+   Toggled by `.dark` on <html>. Overrides surfaces, borders and
+   text — colored heroes/badges stay vivid, progress fills stay light.
+   ============================================================ */
+
+/* App background */
+.dark .app-bg {
+  background-color: #0b1120;
+  background-image:
+    radial-gradient(1100px 520px at 100% -8%, rgba(91, 108, 242, .16), transparent 60%),
+    radial-gradient(900px 480px at -5% 0%, rgba(99, 102, 241, .12), transparent 55%);
+}
+
+/* ---- Tailwind utility overrides (chrome) ---- */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .focus\:bg-white:focus { background-color: #1e293b !important; }
+.dark .bg-slate-50 { background-color: #0f172a !important; }
+.dark .bg-slate-100 { background-color: #334155 !important; }
+.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+.dark .hover\:bg-slate-50:hover { background-color: #243044 !important; }
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-slate-100 { border-color: #27324a !important; }
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #aeb9c9 !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+/* Progress fills sit on colored heroes — keep them light */
+.dark #progressBar, .dark #todayProgressBar { background-color: #fff !important; }
+/* Sidebar / header / panels read as solid dark surfaces */
+.dark aside, .dark header { background-color: #111a2e !important; }
+
+/* ---- Custom components ---- */
+.dark .soft-card { box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5); }
+.dark .panel, .dark .stat-card {
+  background: #1e293b; border-color: #2f3b52;
+  box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 4px 12px -8px rgba(0,0,0,.4);
+}
+.dark .panel-title { color: #e2e8f0; }
+.dark .stat-num { color: #f1f5f9; }
+.dark .stat-head { color: #94a3b8; }
+
+/* Nav + projects */
+.dark .nav-item { color: #cbd5e1; }
+.dark .nav-item:hover { background: #243044; color: #fff; }
+.dark .nav-item.is-active { background: #2a2f63; color: #c7d2fe; }
+.dark .project-item { color: #cbd5e1; }
+.dark .project-item:hover { background: #243044; }
+.dark .project-item.is-active {
+  background: linear-gradient(to right, #2a2f63, #232a4d);
+  color: #c7d2fe;
+}
+.dark .project-item .proj-count { background: #334155; color: #cbd5e1; }
+.dark .project-item.is-active .proj-count { background: #3a417e; color: #c7d2fe; }
+.dark .proj-bar { background: #334155; }
+.dark .project-item.is-active .proj-bar { background: #3a417e; }
+.dark .project-dot { background: #475569; }
+
+/* Tasks */
+.dark .task-row { background: #1e293b; border-color: #2f3b52; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.dark .task-row:hover { border-color: #3b4a66; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
+.dark .task-row.is-done { background: #172033; }
+.dark .task-title { color: #e2e8f0; }
+.dark .task-row.is-done .task-title { color: #64748b; }
+.dark .task-check { background: #0f172a; border-color: #475569; }
+.dark .due { color: #94a3b8; }
+.dark .badge-Low { background: #334155; color: #cbd5e1; }
+.dark .est { background: #2a2f63; color: #c7d2fe; }
+.dark .task-del { color: #475569; }
+.dark .task-tag { background: #1e293b; border-color: #334155; color: #475569; }
+
+/* Filter chips + segmented control */
+.dark .filter-chip { background: #1e293b; border-color: #334155; color: #94a3b8; }
+.dark .filter-chip:hover { border-color: #4750db; color: #c7d2fe; }
+.dark .filter-chip.is-active { background: #4750db; border-color: #4750db; color: #fff; }
+.dark .seg { background: #0f172a; }
+.dark .seg-btn { color: #94a3b8; }
+.dark .seg-btn:hover { color: #e2e8f0; }
+.dark .seg-btn.is-active { background: #334155; color: #c7d2fe; }
+
+/* Tag toggles keep their semantic tints (amber/violet) — fine on dark */
+.dark .tag-toggle { background: #1e293b; border-color: #334155; color: #94a3b8; }
+
+/* Charts / tracks */
+.dark .bc-track, .dark .pr-bar-track { background: #334155; }
+.dark .bc-label { color: #aeb9c9; }
+
+/* Dashboard ghost button */
+.dark .dash-btn-ghost { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+.dark .dash-btn-ghost:hover { border-color: #475569; color: #fff; }
+
+/* Detailed matrix cards */
+.dark .mq-card.do       { background: rgba(34,197,94,.10);  border-color: rgba(34,197,94,.28);  color: #4ade80; }
+.dark .mq-card.schedule { background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.28); color: #fbbf24; }
+.dark .mq-card.delegate { background: rgba(59,130,246,.10); border-color: rgba(59,130,246,.28); color: #60a5fa; }
+.dark .mq-card.del      { background: rgba(239,68,68,.10);  border-color: rgba(239,68,68,.28);  color: #f87171; }
+.dark .mq-lead { color: #f1f5f9; }
+.dark .mq-advice { color: #94a3b8; }
+.dark .mq-count { color: #f1f5f9; }
+.dark .mq-task { color: #e2e8f0; }
+.dark .mq-proj { background: rgba(255,255,255,.08); color: #cbd5e1; }
+.dark .mq-time { color: #94a3b8; }
+
+/* Project matrix view quadrants */
+.dark .quad.do        { border-color: rgba(34,197,94,.3);  background: rgba(34,197,94,.07); }
+.dark .quad.schedule  { border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.07); }
+.dark .quad.delegate  { border-color: rgba(59,130,246,.3); background: rgba(59,130,246,.07); }
+.dark .quad.del       { border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.07); }
+
+/* Today slots + picker */
+.dark .today-slot { border-color: #334155; color: #94a3b8; }
+.dark .today-slot:hover { border-color: #4750db; color: #c7d2fe; background: #1c2742; }
+.dark .picker-sheet { background: #1e293b; }
+
+/* Scrollbars */
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }

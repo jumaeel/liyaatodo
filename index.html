@@ -12,6 +12,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'] },
@@ -19,6 +20,17 @@
         },
       },
     };
+  </script>
+  <!-- Apply saved theme before paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('liyaa.theme');
+        if (t === 'dark' || (!t && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -111,6 +123,10 @@
                    focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
         </label>
         <div class="ml-auto flex items-center gap-2.5">
+          <button id="themeToggle" class="grid w-9 h-9 place-items-center rounded-full hover:bg-slate-100 text-slate-500 transition" title="Toggle dark mode" aria-label="Toggle dark mode">
+            <svg class="w-5 h-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+            <svg class="w-5 h-5 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
           <button class="hidden sm:grid w-9 h-9 place-items-center rounded-full hover:bg-slate-100 text-slate-500 transition" title="Notifications">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
           </button>
@@ -203,16 +219,19 @@
               </div>
             </section>
 
-            <!-- Breakdown: priority + focus matrix -->
-            <section class="grid sm:grid-cols-2 gap-4">
-              <div class="panel">
-                <div class="panel-head"><h3 class="panel-title">Priority Breakdown</h3></div>
-                <div id="priorityBreakdown" class="space-y-3.5 mt-1"></div>
+            <!-- Priority breakdown -->
+            <section class="panel">
+              <div class="panel-head"><h3 class="panel-title">Priority Breakdown</h3></div>
+              <div id="priorityBreakdown" class="space-y-3.5 mt-1"></div>
+            </section>
+
+            <!-- Focus matrix (detailed) -->
+            <section class="panel">
+              <div class="panel-head">
+                <h3 class="panel-title">Focus Matrix</h3>
+                <span class="text-xs text-slate-400">Eisenhower · what to act on</span>
               </div>
-              <div class="panel">
-                <div class="panel-head"><h3 class="panel-title">Focus Matrix</h3><span class="text-xs text-slate-400">Eisenhower</span></div>
-                <div id="matrixBreakdown" class="grid grid-cols-2 gap-2.5 mt-1"></div>
-              </div>
+              <div id="matrixBreakdown" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1"></div>
             </section>
 
             <!-- Projects overview -->
@@ -318,6 +337,10 @@
                       style="width:0%; transition: width 0.7s cubic-bezier(.4,0,.2,1);"></div>
                   </div>
                   <p id="progressCountLabel" class="text-xs font-medium text-white/70 mt-2">0 of 0 tasks completed</p>
+                  <p id="progressTimeLabel" class="hidden text-xs font-semibold text-white/90 mt-1.5 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <span id="progressTimeText"></span>
+                  </p>
                 </div>
                 <div class="ring-wrap shrink-0">
                   <div class="ring" id="progressRing"></div>
@@ -346,6 +369,12 @@
                   <label class="flex-1">
                     <span class="block text-xs font-medium text-slate-400 mb-1">Deadline</span>
                     <input id="taskDeadline" type="date"
+                      class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                             focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+                  </label>
+                  <label class="flex-1">
+                    <span class="block text-xs font-medium text-slate-400 mb-1">Est. time</span>
+                    <input id="taskEstimate" type="text" maxlength="12" placeholder="e.g. 30m, 2h"
                       class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
                              focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
                   </label>
@@ -432,7 +461,7 @@
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">2</div>
                 <div class="min-w-0">
                   <h3 class="font-extrabold text-slate-900 text-lg">Add your tasks</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open a project and use the <b>Add task</b> form. Give it a title, pick a <b>priority</b> (High / Medium / Low), and optionally a <b>deadline</b>. You can also tag a task <b>★ Important</b> and <b>⚡ Urgent</b> — that powers the priority matrix in step 5. Tick the checkbox when it's done and your progress updates instantly.</p>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open a project and use the <b>Add task</b> form. Give it a title, pick a <b>priority</b> (High / Medium / Low), an optional <b>deadline</b>, and an <b>estimated time</b> (type things like <i>30m</i>, <i>2h</i>, or <i>1h30m</i>). You can also tag a task <b>★ Important</b> and <b>⚡ Urgent</b> — that powers the priority matrix in step 5. Tick the checkbox when it's done and your progress updates instantly.</p>
                 </div>
               </div>
 
@@ -481,6 +510,8 @@
                 <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Search</b> at the top of any page jumps to matching tasks.</span></li>
                 <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Works <b>offline</b> — it’s installable as an app from your browser’s “Add to Home Screen / Install” option.</span></li>
                 <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Overdue</b> tasks are flagged in red so nothing slips through.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Add a <b>time estimate</b> to any task and Liyaatodo totals up how much work each project needs.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Use the <b>🌙 / ☀️ button</b> in the top bar to switch between <b>dark and light mode</b>.</span></li>
                 <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Deleting a project removes its tasks too — you’ll be asked to confirm first.</span></li>
               </ul>
             </div>
