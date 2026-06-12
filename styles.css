@@ -439,11 +439,104 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 
 /* ===== Dashboard styles ===== */
 
-/* Vision banner */
+/* Vision banner (guide intro) */
 .vision-banner {
   background: linear-gradient(135deg, #3730a3 0%, #4750db 50%, #5b6cf2 100%);
   box-shadow: 0 18px 40px -18px rgba(58, 63, 176, .45);
 }
+
+/* ===== Notepad banner (dashboard hero — styled like the logo) ===== */
+.notepad-banner {
+  background:
+    radial-gradient(520px 260px at 96% 110%, rgba(91,108,242,.16), transparent 60%),
+    radial-gradient(420px 220px at 0% -20%, rgba(245,166,35,.14), transparent 55%),
+    linear-gradient(150deg, #f7f8ff 0%, #eceefb 60%, #e4e6f6 100%);
+  border: 1px solid #dde0f8;
+  border-bottom: 5px solid #5b6cf2;       /* the pad's blue drop edge */
+  box-shadow: 0 18px 40px -22px rgba(91,108,242,.45);
+}
+
+/* spiral binding along the top */
+.vb-spiral {
+  position: absolute; top: -7px; left: 0; right: 0;
+  display: flex; justify-content: space-evenly;
+  pointer-events: none;
+}
+.vb-spiral span {
+  width: 9px; height: 26px;
+  border-radius: 9px;
+  background: #1f2333;
+  box-shadow: inset 0 -10px 0 #c5c9ef;
+}
+.vb-spiral span:nth-child(2n) { transform: translateY(2px); }
+
+/* decorative notepad + pencil art */
+.vb-art {
+  position: absolute; right: -8px; bottom: -22px;
+  width: 240px; height: auto;
+  filter: drop-shadow(0 14px 22px rgba(91,108,242,.28));
+  pointer-events: none;
+}
+@media (max-width: 760px) { .vb-art { display: none; } }
+/* keep text clear of the art on mid-size screens */
+@media (min-width: 761px) and (max-width: 1100px) { .vb-content { padding-right: 230px !important; } }
+
+.vb-content { padding-top: 2.6rem !important; }
+.vb-eyebrow {
+  display: inline-block;
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: #4750db;
+  background: rgba(91,108,242,.12);
+  border: 1px solid rgba(91,108,242,.22);
+  padding: .3rem .8rem; border-radius: 999px;
+  margin-bottom: .9rem;
+}
+.vb-title { color: #1f2333; }
+.vb-accent { color: #5b6cf2; position: relative; display: inline-block; white-space: nowrap; }
+.vb-swoosh {
+  position: absolute; left: 0; right: 0; bottom: -16px;
+  width: 100%; height: auto;
+  pointer-events: none;
+}
+.vb-sub { color: #4b5468; max-width: 36rem; }
+
+.vb-btn-primary {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .65rem 1.25rem;
+  border-radius: 12px;
+  font-size: .875rem; font-weight: 700; color: #fff;
+  background: linear-gradient(110deg, #4750db, #5b6cf2);
+  box-shadow: 0 10px 20px -10px rgba(71,80,219,.65);
+}
+.vb-btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.vb-btn-ghost {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .65rem 1.25rem;
+  border-radius: 12px;
+  font-size: .875rem; font-weight: 700;
+  color: #4750db;
+  background: #fff;
+  border: 1px solid #dde0f8;
+  box-shadow: 0 2px 6px rgba(31,35,51,.06);
+}
+.vb-btn-ghost:hover { border-color: #b9c0f5; transform: translateY(-1px); }
+
+/* dark mode */
+.dark .notepad-banner {
+  background:
+    radial-gradient(520px 260px at 96% 110%, rgba(91,108,242,.22), transparent 60%),
+    radial-gradient(420px 220px at 0% -20%, rgba(245,166,35,.10), transparent 55%),
+    linear-gradient(150deg, #171d33 0%, #1a2040 60%, #1d2245 100%);
+  border-color: #2c3357;
+  border-bottom-color: #5b6cf2;
+}
+.dark .vb-spiral span { background: #0b0e1a; box-shadow: inset 0 -10px 0 #3a4170; }
+.dark .vb-eyebrow { color: #a5b0f7; background: rgba(91,108,242,.18); border-color: rgba(91,108,242,.35); }
+.dark .vb-title { color: #f1f5f9; }
+.dark .vb-accent { color: #8b97f7; }
+.dark .vb-sub { color: #aeb9c9; }
+.dark .vb-btn-ghost { background: #1e293b; border-color: #334155; color: #c7d2fe; }
 
 /* Banner buttons */
 .banner-btn-light {
