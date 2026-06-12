@@ -1,5 +1,5 @@
-/* Liyaaa To-Do · service worker — offline-first app shell cache */
-const CACHE = 'liyaaa-v2';
+/* Liyaatodo · service worker — offline-first app shell cache */
+const CACHE = 'liyaatodo-v3';
 const ASSETS = [
   './',
   './index.html',

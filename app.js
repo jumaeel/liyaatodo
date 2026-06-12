@@ -1,5 +1,5 @@
 /* ============================================================
-   Liyaaa To-Do · Daily Progress Dashboard
+   Liyaatodo · Daily Progress Dashboard
    Vanilla JS · LocalStorage persistence
    ============================================================ */
 
@@ -127,18 +127,26 @@
     list.innerHTML = '';
 
     state.projects.forEach((proj) => {
-      const count = tasksFor(proj.id).length;
+      const tasks = tasksFor(proj.id);
+      const total = tasks.length;
+      const done = tasks.filter((t) => t.isCompleted).length;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
       const isActive = proj.id === state.activeProjectId;
 
       const btn = document.createElement('button');
       btn.className = 'project-item' + (isActive ? ' is-active' : '');
       btn.dataset.id = proj.id;
       btn.innerHTML = `
-        <span class="project-dot"></span>
-        <span class="truncate">${escapeHTML(proj.name)}</span>
-        <span class="proj-count">${count}</span>
-        <span class="proj-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
-          <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        <span class="proj-main">
+          <span class="project-dot"></span>
+          <span class="proj-name truncate">${escapeHTML(proj.name)}</span>
+          <span class="proj-count">${total}</span>
+          <span class="proj-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
+            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          </span>
+        </span>
+        <span class="proj-bar" title="${done}/${total} completed (${pct}%)">
+          <span class="proj-bar-fill" style="width:${pct}%"></span>
         </span>`;
       list.appendChild(btn);
     });
@@ -231,7 +239,6 @@
     const row = document.createElement('div');
     row.className = `task-row pr-${task.priority}` + (task.isCompleted ? ' is-done' : '') + (opts.draggable ? ' is-draggable' : '');
     row.dataset.id = task.id;
-    if (opts.draggable) row.setAttribute('draggable', 'true');
 
     const overdue = isOverdue(task);
     const dueHTML = task.deadline
@@ -387,6 +394,95 @@
     toast(`Moved to “${q.title}”`);
   }
 
+  /* ---------- Pointer-based drag & drop (mouse + touch) ---------- */
+  function setupMatrixDnD() {
+    const grid = $('#matrixView');
+    let drag = null;          // { id, row, ghost, startX, startY, active }
+    let holdTimer = null;
+
+    const quadAtPoint = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      return el ? el.closest('.quad') : null;
+    };
+    const clearHints = () => $$('.quad.drag-over', grid).forEach((q) => q.classList.remove('drag-over'));
+    const highlight = (x, y) => {
+      const quad = quadAtPoint(x, y);
+      $$('.quad.drag-over', grid).forEach((q) => { if (q !== quad) q.classList.remove('drag-over'); });
+      if (quad && !quad.classList.contains('drag-over')) quad.classList.add('drag-over');
+    };
+
+    function arm() {
+      if (!drag || drag.active) return;
+      drag.active = true;
+      // Floating ghost follows the pointer; pointer-events:none so hit-testing sees the quad beneath.
+      const r = drag.row.getBoundingClientRect();
+      const ghost = drag.row.cloneNode(true);
+      ghost.classList.add('drag-ghost');
+      ghost.style.width = r.width + 'px';
+      drag.offX = drag.startX - r.left;
+      drag.offY = drag.startY - r.top;
+      document.body.appendChild(ghost);
+      drag.ghost = ghost;
+      drag.row.classList.add('dragging');
+      document.body.classList.add('dnd-active'); // disables touch-scroll / text selection
+      positionGhost(drag.startX, drag.startY);
+      highlight(drag.startX, drag.startY);
+    }
+    function positionGhost(x, y) {
+      if (!drag || !drag.ghost) return;
+      drag.ghost.style.left = (x - drag.offX) + 'px';
+      drag.ghost.style.top = (y - drag.offY) + 'px';
+    }
+
+    function teardown(commit, x, y) {
+      clearTimeout(holdTimer); holdTimer = null;
+      if (drag) {
+        if (drag.active && commit) {
+          const quad = quadAtPoint(x, y);
+          if (quad) moveTaskToQuadrant(drag.id, quad.dataset.quad);
+        }
+        if (drag.ghost) drag.ghost.remove();
+        drag.row.classList.remove('dragging');
+      }
+      clearHints();
+      document.body.classList.remove('dnd-active');
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      drag = null;
+    }
+
+    const onMove = (e) => {
+      if (!drag) return;
+      if (drag.active) {
+        e.preventDefault();
+        positionGhost(e.clientX, e.clientY);
+        highlight(e.clientX, e.clientY);
+        return;
+      }
+      const moved = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY);
+      if (drag.pointerType === 'mouse') {
+        if (moved > 6) arm();                 // mouse: small move starts the drag
+      } else if (moved > 14) {
+        teardown(false);                       // touch: moved before hold fired → it's a scroll, bail out
+      }
+    };
+    const onUp = (e) => teardown(true, e.clientX, e.clientY);
+    const onCancel = () => teardown(false);
+
+    grid.addEventListener('pointerdown', (e) => {
+      if (e.button && e.button !== 0) return;          // ignore right/middle click
+      const row = e.target.closest('.task-row');
+      if (!row) return;
+      if (e.target.closest('[data-action]')) return;   // taps on checkbox / chips / delete stay taps
+      drag = { id: row.dataset.id, row, ghost: null, startX: e.clientX, startY: e.clientY, active: false, pointerType: e.pointerType };
+      window.addEventListener('pointermove', onMove, { passive: false });
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onCancel);
+      if (e.pointerType !== 'mouse') holdTimer = setTimeout(arm, 180); // touch: long-press to lift
+    });
+  }
+
   function deleteTask(id) {
     state.tasks = state.tasks.filter((t) => t.id !== id);
     save();
@@ -461,37 +557,8 @@
     $('#taskList').addEventListener('click', handleTaskClick);
     $('#matrixView').addEventListener('click', handleTaskClick);
 
-    // Drag & drop between matrix quadrants (event delegation on the grid)
-    const grid = $('#matrixView');
-    const clearDropHints = () => $$('.quad.drag-over', grid).forEach((q) => q.classList.remove('drag-over'));
-
-    grid.addEventListener('dragstart', (e) => {
-      const row = e.target.closest('.task-row');
-      if (!row) return;
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', row.dataset.id);
-      requestAnimationFrame(() => row.classList.add('dragging'));
-    });
-    grid.addEventListener('dragend', (e) => {
-      const row = e.target.closest('.task-row');
-      if (row) row.classList.remove('dragging');
-      clearDropHints();
-    });
-    grid.addEventListener('dragover', (e) => {
-      const quad = e.target.closest('.quad');
-      if (!quad) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      if (!quad.classList.contains('drag-over')) { clearDropHints(); quad.classList.add('drag-over'); }
-    });
-    grid.addEventListener('drop', (e) => {
-      const quad = e.target.closest('.quad');
-      if (!quad) return;
-      e.preventDefault();
-      clearDropHints();
-      const id = e.dataTransfer.getData('text/plain');
-      if (id) moveTaskToQuadrant(id, quad.dataset.quad);
-    });
+    // Drag & drop between matrix quadrants — pointer-based (works for mouse AND touch)
+    setupMatrixDnD();
 
     // View switch (List / Matrix)
     $$('.seg-btn').forEach((btn) => {
