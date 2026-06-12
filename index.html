@@ -29,7 +29,7 @@
 
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="h-full bg-[#f8fafc] text-slate-800 font-sans antialiased">
+<body class="h-full app-bg text-slate-800 font-sans antialiased">
 
   <div class="flex h-full overflow-hidden">
 
@@ -98,27 +98,28 @@
       <div class="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
         <div class="max-w-3xl mx-auto space-y-6">
 
-          <!-- Progress card -->
-          <section class="bg-white rounded-xl2 border border-slate-200 shadow-sm p-6">
-            <div class="flex items-end justify-between flex-wrap gap-3">
-              <div>
-                <p class="text-sm font-medium text-slate-400">Daily Progress</p>
-                <p id="progressPercentLabel" class="text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">0%</p>
+          <!-- Progress hero -->
+          <section class="progress-hero relative overflow-hidden rounded-2xl p-6 sm:p-7 text-white">
+            <div class="hero-glow"></div>
+            <div class="relative flex items-center gap-5 sm:gap-7">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white/70">Daily Progress</p>
+                <p id="progressSubLabel" class="text-base sm:text-lg font-semibold mt-0.5">Add a task to get started</p>
+                <div class="mt-4 h-2.5 w-full rounded-full bg-white/20 overflow-hidden">
+                  <div id="progressBar" class="h-full rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,.6)]"
+                    style="width:0%; transition: width 0.7s cubic-bezier(.4,0,.2,1);"></div>
+                </div>
+                <p id="progressCountLabel" class="text-xs font-medium text-white/70 mt-2">0 of 0 tasks completed</p>
               </div>
-              <div class="text-right">
-                <p id="progressCountLabel" class="text-sm font-semibold text-slate-600">0 of 0 tasks completed</p>
-                <p id="progressSubLabel" class="text-xs text-slate-400">Add a task to get started</p>
+              <div class="ring-wrap shrink-0">
+                <div class="ring" id="progressRing"></div>
+                <span id="progressPercentLabel" class="ring-label tabular-nums">0%</span>
               </div>
-            </div>
-            <div class="mt-4 h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div id="progressBar"
-                class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500"
-                style="width:0%; transition: width 0.6s cubic-bezier(.4,0,.2,1);"></div>
             </div>
           </section>
 
           <!-- Add task card -->
-          <section class="bg-white rounded-xl2 border border-slate-200 shadow-sm p-5">
+          <section class="soft-card bg-white rounded-2xl border border-slate-200/80 p-5">
             <form id="addTaskForm" class="space-y-3">
               <input id="taskTitle" type="text" required maxlength="120" placeholder="What needs to be done?"
                 class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
@@ -145,9 +146,7 @@
                 <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
                 <button type="button" id="newImportant" data-on="false" class="tag-toggle">★ Important</button>
                 <button type="button" id="newUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
-                <button type="submit"
-                  class="ml-auto px-5 py-2.5 rounded-xl2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
-                         shadow-sm hover:shadow transition flex items-center justify-center gap-2">
+                <button type="submit" class="add-task-btn ml-auto">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   Add Task
                 </button>
@@ -182,8 +181,8 @@
 
           <!-- Empty state -->
           <div id="emptyState" class="hidden text-center py-16">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-100 grid place-items-center mb-4">
-              <svg class="w-8 h-8 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-100 ring-1 ring-indigo-100 grid place-items-center mb-4">
+              <svg class="w-8 h-8 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
             <p id="emptyStateText" class="text-slate-500 font-medium">No tasks yet</p>
             <p class="text-sm text-slate-400">Add your first task above to start tracking progress.</p>

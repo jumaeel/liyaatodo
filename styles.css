@@ -4,6 +4,46 @@
 
 html, body { height: 100%; }
 
+/* Smooth percentage animation for the conic ring */
+@property --pct { syntax: '<number>'; inherits: false; initial-value: 0; }
+
+/* ---- Ambient app background ---- */
+.app-bg {
+  background-color: #f6f7fb;
+  background-image:
+    radial-gradient(1100px 520px at 100% -8%, rgba(139, 92, 246, .10), transparent 60%),
+    radial-gradient(900px 480px at -5% 0%, rgba(99, 102, 241, .10), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* ---- Soft elevated card ---- */
+.soft-card { box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12); }
+
+/* ---- Progress hero ---- */
+.progress-hero {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 52%, #c026d3 100%);
+  box-shadow: 0 18px 40px -18px rgba(79, 70, 229, .55);
+}
+.hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(420px 200px at 88% -30%, rgba(255,255,255,.30), transparent 60%),
+    radial-gradient(360px 220px at 0% 130%, rgba(255,255,255,.14), transparent 60%);
+}
+.ring-wrap { position: relative; width: 92px; height: 92px; display: grid; place-items: center; }
+.ring {
+  --pct: 0;
+  width: 92px; height: 92px; border-radius: 50%;
+  background: conic-gradient(#fff calc(var(--pct) * 1%), rgba(255,255,255,.22) 0);
+  -webkit-mask: radial-gradient(closest-side, transparent 71%, #000 72%);
+          mask: radial-gradient(closest-side, transparent 71%, #000 72%);
+  transition: --pct 0.7s cubic-bezier(.4,0,.2,1);
+}
+.ring-label {
+  position: absolute;
+  font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -.02em;
+}
+
 /* Smooth, refined scrollbars */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
@@ -73,19 +113,41 @@ button, a, input, select, .project-item, .task-row {
   color: #fff;
 }
 
+/* ---- Add Task button ---- */
+.add-task-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.875rem; font-weight: 600; color: #fff;
+  background: linear-gradient(110deg, #4f46e5, #7c3aed);
+  box-shadow: 0 8px 18px -8px rgba(79, 70, 229, .7);
+}
+.add-task-btn:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 12px 22px -8px rgba(79, 70, 229, .75); }
+.add-task-btn:active { transform: translateY(0); }
+
 /* ---- Task row ---- */
 .task-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.85rem;
   background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
+  border: 1px solid #e9edf3;
+  border-radius: 14px;
+  padding: 0.85rem 1rem 0.85rem 1.35rem;
   box-shadow: 0 1px 2px rgba(15,23,42,.04);
   animation: taskIn 0.3s ease both;
 }
-.task-row:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(15,23,42,.06); }
+.task-row::before {
+  content: ""; position: absolute; left: 7px; top: 11px; bottom: 11px;
+  width: 4px; border-radius: 4px; background: #cbd5e1;
+  transition: background 0.3s ease;
+}
+.task-row.pr-High::before   { background: #f87171; }
+.task-row.pr-Medium::before { background: #fb923c; }
+.task-row.pr-Low::before    { background: #cbd5e1; }
+.task-row.is-done::before   { background: #e2e8f0; }
+.task-row:hover { border-color: #d4dae3; box-shadow: 0 8px 20px -10px rgba(15,23,42,.18); transform: translateY(-1px); }
 
 @keyframes taskIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -228,7 +290,17 @@ button, a, input, select, .project-item, .task-row {
   padding: 1px 8px; border-radius: 999px;
 }
 .quad-body { padding: 0.75rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-.quad-empty { font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1.25rem 0; }
+.quad-empty { font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1.25rem 0; pointer-events: none; }
+
+/* Drag & drop affordances */
+.task-row.is-draggable { cursor: grab; }
+.task-row.is-draggable:active { cursor: grabbing; }
+.task-row.dragging { opacity: .45; transform: scale(.98); }
+.quad.drag-over { outline: 2px dashed rgba(99,102,241,.7); outline-offset: -4px; }
+.quad.drag-over .quad-body { background: rgba(99,102,241,.06); }
+/* Don't let inner elements swallow drag/drop events */
+.quad-body > * { pointer-events: auto; }
+.task-row.dragging * { pointer-events: none; }
 
 /* Quadrant palettes (match the reference matrix) */
 .quad.do        { border-color: #a7d7c0; background: #f0faf5; }

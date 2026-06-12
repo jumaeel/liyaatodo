@@ -179,12 +179,13 @@
 
     $('#progressBar').style.width = pct + '%';
     $('#progressPercentLabel').textContent = pct + '%';
+    $('#progressRing').style.setProperty('--pct', pct);
     $('#progressCountLabel').textContent = `${done} of ${total} task${total === 1 ? '' : 's'} completed`;
 
     let sub;
     if (total === 0) sub = 'Add a task to get started';
     else if (pct === 100) sub = '🎉 All done — great work!';
-    else if (pct >= 50) sub = 'Keep it up, you’re over halfway.';
+    else if (pct >= 50) sub = 'Over halfway there!';
     else sub = 'Let’s build some momentum.';
     $('#progressSubLabel').textContent = sub;
   }
@@ -226,10 +227,11 @@
     tasks.forEach((task) => listEl.appendChild(taskRow(task)));
   }
 
-  function taskRow(task) {
+  function taskRow(task, opts = {}) {
     const row = document.createElement('div');
-    row.className = 'task-row' + (task.isCompleted ? ' is-done' : '');
+    row.className = `task-row pr-${task.priority}` + (task.isCompleted ? ' is-done' : '') + (opts.draggable ? ' is-draggable' : '');
     row.dataset.id = task.id;
+    if (opts.draggable) row.setAttribute('draggable', 'true');
 
     const overdue = isOverdue(task);
     const dueHTML = task.deadline
@@ -258,11 +260,12 @@
 
   /* ---------- Eisenhower Matrix ---------- */
   const QUADRANTS = [
-    { key: 'do',       cls: 'do',       icon: '🟢', title: 'Do',       sub: 'Important · Urgent',         test: (t) => t.important && t.urgent },
-    { key: 'schedule', cls: 'schedule', icon: '🟠', title: 'Schedule', sub: 'Important · Not urgent',     test: (t) => t.important && !t.urgent },
-    { key: 'delegate', cls: 'delegate', icon: '🔵', title: 'Delegate', sub: 'Not important · Urgent',     test: (t) => !t.important && t.urgent },
-    { key: 'del',      cls: 'del',      icon: '🔴', title: 'Delete',   sub: 'Not important · Not urgent', test: (t) => !t.important && !t.urgent },
+    { key: 'do',       cls: 'do',       icon: '🟢', title: 'Do',       sub: 'Important · Urgent',         imp: true,  urg: true  },
+    { key: 'schedule', cls: 'schedule', icon: '🟠', title: 'Schedule', sub: 'Important · Not urgent',     imp: true,  urg: false },
+    { key: 'delegate', cls: 'delegate', icon: '🔵', title: 'Delegate', sub: 'Not important · Urgent',     imp: false, urg: true  },
+    { key: 'del',      cls: 'del',      icon: '🔴', title: 'Delete',   sub: 'Not important · Not urgent', imp: false, urg: false },
   ];
+  const inQuadrant = (t, q) => t.important === q.imp && t.urgent === q.urg;
 
   function renderMatrix() {
     const wrap = $('#matrixView');
@@ -271,9 +274,10 @@
     wrap.innerHTML = '';
 
     QUADRANTS.forEach((q) => {
-      const items = tasks.filter(q.test);
+      const items = tasks.filter((t) => inQuadrant(t, q));
       const quad = document.createElement('div');
       quad.className = `quad ${q.cls}`;
+      quad.dataset.quad = q.key;
       quad.innerHTML = `
         <div class="quad-head">
           <div class="qt">${q.icon} ${q.title}<span class="qcount">${items.length}</span></div>
@@ -282,12 +286,12 @@
         <div class="quad-body"></div>`;
       const body = quad.querySelector('.quad-body');
       if (items.length === 0) {
-        body.innerHTML = `<p class="quad-empty">No tasks here</p>`;
+        body.innerHTML = `<p class="quad-empty">Drop tasks here</p>`;
       } else {
         items
           .slice()
           .sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1))
-          .forEach((t) => body.appendChild(taskRow(t)));
+          .forEach((t) => body.appendChild(taskRow(t, { draggable: true })));
       }
       wrap.appendChild(quad);
     });
@@ -370,6 +374,19 @@
     render();
   }
 
+  // Re-tag a task to match a quadrant (used by drag-and-drop).
+  function moveTaskToQuadrant(id, quadKey) {
+    const task = state.tasks.find((t) => t.id === id);
+    const q = QUADRANTS.find((x) => x.key === quadKey);
+    if (!task || !q) return;
+    if (task.important === q.imp && task.urgent === q.urg) return; // no change
+    task.important = q.imp;
+    task.urgent = q.urg;
+    save();
+    render();
+    toast(`Moved to “${q.title}”`);
+  }
+
   function deleteTask(id) {
     state.tasks = state.tasks.filter((t) => t.id !== id);
     save();
@@ -443,6 +460,38 @@
     };
     $('#taskList').addEventListener('click', handleTaskClick);
     $('#matrixView').addEventListener('click', handleTaskClick);
+
+    // Drag & drop between matrix quadrants (event delegation on the grid)
+    const grid = $('#matrixView');
+    const clearDropHints = () => $$('.quad.drag-over', grid).forEach((q) => q.classList.remove('drag-over'));
+
+    grid.addEventListener('dragstart', (e) => {
+      const row = e.target.closest('.task-row');
+      if (!row) return;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', row.dataset.id);
+      requestAnimationFrame(() => row.classList.add('dragging'));
+    });
+    grid.addEventListener('dragend', (e) => {
+      const row = e.target.closest('.task-row');
+      if (row) row.classList.remove('dragging');
+      clearDropHints();
+    });
+    grid.addEventListener('dragover', (e) => {
+      const quad = e.target.closest('.quad');
+      if (!quad) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (!quad.classList.contains('drag-over')) { clearDropHints(); quad.classList.add('drag-over'); }
+    });
+    grid.addEventListener('drop', (e) => {
+      const quad = e.target.closest('.quad');
+      if (!quad) return;
+      e.preventDefault();
+      clearDropHints();
+      const id = e.dataTransfer.getData('text/plain');
+      if (id) moveTaskToQuadrant(id, quad.dataset.quad);
+    });
 
     // View switch (List / Matrix)
     $$('.seg-btn').forEach((btn) => {
