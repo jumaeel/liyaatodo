@@ -149,5 +149,96 @@ button, a, input, select, .project-item, .task-row {
 }
 .task-del:hover { color: #ef4444; background: #fef2f2; }
 
+/* ---- Tag toggles (Important / Urgent) ---- */
+.tag-toggle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+}
+.tag-toggle:hover { border-color: #cbd5e1; }
+#newImportant[data-on="true"],
+.tag-toggle.is-important {
+  background: #fef3c7; border-color: #fcd34d; color: #b45309;
+}
+#newUrgent[data-on="true"],
+.tag-toggle.is-urgent {
+  background: #ede9fe; border-color: #c4b5fd; color: #6d28d9;
+}
+
+/* Compact icon toggles inside task rows */
+.task-tag {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #cbd5e1;
+  flex-shrink: 0;
+}
+.task-tag:hover { border-color: #cbd5e1; color: #94a3b8; }
+.task-tag.on-imp { background: #fef3c7; border-color: #fcd34d; color: #d97706; }
+.task-tag.on-urg { background: #ede9fe; border-color: #c4b5fd; color: #7c3aed; }
+
+/* ---- Segmented view switch ---- */
+.seg {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.seg-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; font-weight: 600;
+  color: #64748b;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+}
+.seg-btn:hover { color: #334155; }
+.seg-btn.is-active {
+  background: #fff; color: #4338ca;
+  box-shadow: 0 1px 2px rgba(15,23,42,.08);
+}
+
+/* ---- Eisenhower quadrants ---- */
+.quad {
+  border-radius: 12px;
+  border: 1px solid;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+}
+.quad-head {
+  padding: 0.7rem 1rem;
+  color: #fff;
+}
+.quad-head .qt { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: .4rem; }
+.quad-head .qs { font-size: 0.72rem; opacity: .9; }
+.quad-head .qcount {
+  margin-left: auto;
+  font-size: 0.72rem; font-weight: 700;
+  background: rgba(255,255,255,.25);
+  padding: 1px 8px; border-radius: 999px;
+}
+.quad-body { padding: 0.75rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.quad-empty { font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1.25rem 0; }
+
+/* Quadrant palettes (match the reference matrix) */
+.quad.do        { border-color: #a7d7c0; background: #f0faf5; }
+.quad.do        .quad-head { background: #5b9d7d; }
+.quad.schedule  { border-color: #f4c3ad; background: #fdf4ef; }
+.quad.schedule  .quad-head { background: #e08a64; }
+.quad.delegate  { border-color: #aac4ec; background: #eef3fc; }
+.quad.delegate  .quad-head { background: #4f7cc7; }
+.quad.del       { border-color: #f3b0b0; background: #fdf0f0; }
+.quad.del       .quad-head { background: #d96363; }
+
 /* Toast visible state (keeps horizontal centering) */
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

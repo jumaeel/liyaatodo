@@ -11,10 +11,11 @@
   /* ---------- State ---------- */
   let state = {
     projects: [],        // { id, name }
-    tasks: [],           // { id, projectId, title, priority, deadline, isCompleted }
+    tasks: [],           // { id, projectId, title, priority, deadline, isCompleted, urgent, important }
     activeProjectId: null,
   };
   let filter = 'all';    // all | active | done
+  let view = 'list';     // list | matrix
 
   /* ---------- Utilities ---------- */
   const $  = (sel, root = document) => root.querySelector(sel);
@@ -65,6 +66,13 @@
     if (!state.projects.some((p) => p.id === state.activeProjectId)) {
       state.activeProjectId = state.projects[0]?.id ?? null;
     }
+
+    // Migrate older tasks that predate the Eisenhower fields.
+    // Seed `important` from a High priority; default `urgent` to false.
+    state.tasks.forEach((t) => {
+      if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
+      if (typeof t.urgent !== 'boolean') t.urgent = false;
+    });
   }
 
   /* ---------- Date helpers ---------- */
@@ -100,7 +108,18 @@
     renderProjects();
     renderHeader();
     renderProgress();
-    renderTasks();
+    renderView();
+  }
+
+  // Show either the List or the Matrix; only one is in the DOM flow at a time.
+  function renderView() {
+    const isMatrix = view === 'matrix';
+    $('#taskList').classList.toggle('hidden', isMatrix);
+    $('#emptyState').classList.toggle('hidden', isMatrix);   // matrix has its own per-quadrant empties
+    $('#matrixView').classList.toggle('hidden', !isMatrix);
+    $('#filterChips').classList.toggle('invisible', isMatrix); // filters only apply to the list
+    if (isMatrix) renderMatrix();
+    else renderTasks();
   }
 
   function renderProjects() {
@@ -229,10 +248,49 @@
           ${dueHTML}
         </div>
       </div>
+      <button class="task-tag ${task.important ? 'on-imp' : ''}" data-action="toggle-important" title="${task.important ? 'Important' : 'Mark important'}" aria-pressed="${task.important}">★</button>
+      <button class="task-tag ${task.urgent ? 'on-urg' : ''}" data-action="toggle-urgent" title="${task.urgent ? 'Urgent' : 'Mark urgent'}" aria-pressed="${task.urgent}">⚡</button>
       <button class="task-del" data-action="delete" title="Delete task" aria-label="Delete task">
         <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>
       </button>`;
     return row;
+  }
+
+  /* ---------- Eisenhower Matrix ---------- */
+  const QUADRANTS = [
+    { key: 'do',       cls: 'do',       icon: '🟢', title: 'Do',       sub: 'Important · Urgent',         test: (t) => t.important && t.urgent },
+    { key: 'schedule', cls: 'schedule', icon: '🟠', title: 'Schedule', sub: 'Important · Not urgent',     test: (t) => t.important && !t.urgent },
+    { key: 'delegate', cls: 'delegate', icon: '🔵', title: 'Delegate', sub: 'Not important · Urgent',     test: (t) => !t.important && t.urgent },
+    { key: 'del',      cls: 'del',      icon: '🔴', title: 'Delete',   sub: 'Not important · Not urgent', test: (t) => !t.important && !t.urgent },
+  ];
+
+  function renderMatrix() {
+    const wrap = $('#matrixView');
+    const proj = activeProject();
+    const tasks = proj ? tasksFor(proj.id) : [];
+    wrap.innerHTML = '';
+
+    QUADRANTS.forEach((q) => {
+      const items = tasks.filter(q.test);
+      const quad = document.createElement('div');
+      quad.className = `quad ${q.cls}`;
+      quad.innerHTML = `
+        <div class="quad-head">
+          <div class="qt">${q.icon} ${q.title}<span class="qcount">${items.length}</span></div>
+          <div class="qs">${q.sub}</div>
+        </div>
+        <div class="quad-body"></div>`;
+      const body = quad.querySelector('.quad-body');
+      if (items.length === 0) {
+        body.innerHTML = `<p class="quad-empty">No tasks here</p>`;
+      } else {
+        items
+          .slice()
+          .sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1))
+          .forEach((t) => body.appendChild(taskRow(t)));
+      }
+      wrap.appendChild(quad);
+    });
   }
 
   /* ============================================================
@@ -278,7 +336,7 @@
     closeSidebar();
   }
 
-  function addTask({ title, priority, deadline }) {
+  function addTask({ title, priority, deadline, urgent, important }) {
     title = title.trim();
     if (!title || !state.activeProjectId) return;
     const task = {
@@ -288,6 +346,8 @@
       priority: ['High', 'Medium', 'Low'].includes(priority) ? priority : 'Medium',
       deadline: deadline || null,
       isCompleted: false,
+      urgent: !!urgent,
+      important: !!important,
     };
     state.tasks.push(task);
     save();
@@ -298,6 +358,14 @@
     const task = state.tasks.find((t) => t.id === id);
     if (!task) return;
     task.isCompleted = !task.isCompleted;
+    save();
+    render();
+  }
+
+  function toggleTaskFlag(id, flag) {
+    const task = state.tasks.find((t) => t.id === id);
+    if (!task || (flag !== 'urgent' && flag !== 'important')) return;
+    task[flag] = !task[flag];
     save();
     render();
   }
@@ -334,6 +402,14 @@
       if (state.activeProjectId) deleteProject(state.activeProjectId);
     });
 
+    // New-task Eisenhower toggles (Important / Urgent)
+    [['#newImportant'], ['#newUrgent']].forEach(([sel]) => {
+      $(sel).addEventListener('click', () => {
+        const btn = $(sel);
+        btn.dataset.on = btn.dataset.on === 'true' ? 'false' : 'true';
+      });
+    });
+
     // Add task
     $('#addTaskForm').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -341,21 +417,41 @@
         title: $('#taskTitle').value,
         priority: $('#taskPriority').value,
         deadline: $('#taskDeadline').value,
+        important: $('#newImportant').dataset.on === 'true',
+        urgent: $('#newUrgent').dataset.on === 'true',
       });
       $('#taskTitle').value = '';
       $('#taskDeadline').value = '';
+      $('#newImportant').dataset.on = 'false';
+      $('#newUrgent').dataset.on = 'false';
       $('#taskTitle').focus();
     });
 
-    // Task list (event delegation: toggle + delete)
-    $('#taskList').addEventListener('click', (e) => {
+    // Task interactions — shared across List and Matrix containers.
+    const handleTaskClick = (e) => {
       const action = e.target.closest('[data-action]');
       if (!action) return;
       const row = e.target.closest('.task-row');
       if (!row) return;
       const id = row.dataset.id;
-      if (action.dataset.action === 'toggle') toggleTask(id);
-      else if (action.dataset.action === 'delete') deleteTask(id);
+      switch (action.dataset.action) {
+        case 'toggle':           toggleTask(id); break;
+        case 'delete':           deleteTask(id); break;
+        case 'toggle-important': toggleTaskFlag(id, 'important'); break;
+        case 'toggle-urgent':    toggleTaskFlag(id, 'urgent'); break;
+      }
+    };
+    $('#taskList').addEventListener('click', handleTaskClick);
+    $('#matrixView').addEventListener('click', handleTaskClick);
+
+    // View switch (List / Matrix)
+    $$('.seg-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (view === btn.dataset.view) return;
+        view = btn.dataset.view;
+        $$('.seg-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.view === view));
+        renderView();
+      });
     });
 
     // Filters

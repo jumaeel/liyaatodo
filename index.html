@@ -140,28 +140,45 @@
                     class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
                            focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
                 </label>
-                <div class="sm:self-end">
-                  <button type="submit"
-                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
-                           shadow-sm hover:shadow transition flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                    Add Task
-                  </button>
-                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap pt-1">
+                <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
+                <button type="button" id="newImportant" data-on="false" class="tag-toggle">★ Important</button>
+                <button type="button" id="newUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+                <button type="submit"
+                  class="ml-auto px-5 py-2.5 rounded-xl2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
+                         shadow-sm hover:shadow transition flex items-center justify-center gap-2">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Add Task
+                </button>
               </div>
             </form>
           </section>
 
-          <!-- Filters -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">Show</span>
-            <button data-filter="all"    class="filter-chip is-active">All</button>
-            <button data-filter="active" class="filter-chip">Active</button>
-            <button data-filter="done"   class="filter-chip">Completed</button>
+          <!-- Toolbar: view switch + filters -->
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="seg" role="tablist" aria-label="View">
+              <button data-view="list" class="seg-btn is-active">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                List
+              </button>
+              <button data-view="matrix" class="seg-btn">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Matrix
+              </button>
+            </div>
+            <div id="filterChips" class="flex items-center gap-2 flex-wrap">
+              <button data-filter="all"    class="filter-chip is-active">All</button>
+              <button data-filter="active" class="filter-chip">Active</button>
+              <button data-filter="done"   class="filter-chip">Completed</button>
+            </div>
           </div>
 
-          <!-- Task list -->
+          <!-- Task list (List view) -->
           <section id="taskList" class="space-y-2.5"></section>
+
+          <!-- Eisenhower Matrix (Matrix view) -->
+          <section id="matrixView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></section>
 
           <!-- Empty state -->
           <div id="emptyState" class="hidden text-center py-16">
