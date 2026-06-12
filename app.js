@@ -512,7 +512,7 @@
       const shown = active.slice(0, 4);
       const more = active.length - shown.length;
       const rows = shown.map((t) => `
-        <li class="mq-item">
+        <li class="mq-item" data-pid="${t.projectId}" title="Open ${escapeHTML(projName(t.projectId))}">
           <span class="mq-bullet"></span>
           <span class="mq-task">${escapeHTML(t.title)}</span>
           <span class="mq-proj">${escapeHTML(projName(t.projectId))}</span>
@@ -1201,6 +1201,12 @@
     $('#dashProjects').addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-project-id]');
       if (btn) selectProject(btn.dataset.projectId);
+    });
+
+    // --- Dashboard: open a project from a Focus Matrix task ---
+    $('#matrixBreakdown').addEventListener('click', (e) => {
+      const item = e.target.closest('.mq-item[data-pid]');
+      if (item) selectProject(item.dataset.pid);
     });
 
     // --- Eisenhower toggles ---
