@@ -264,6 +264,26 @@
               </button>
             </div>
 
+            <!-- Live clock + time remaining today -->
+            <section class="panel flex flex-col sm:flex-row sm:items-center gap-4">
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 grid place-items-center shrink-0">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <p id="clockTime" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight leading-none">--:--:--</p>
+                  <p id="clockDate" class="text-sm text-slate-500 mt-1.5">—</p>
+                </div>
+              </div>
+              <div class="shrink-0 sm:text-right">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Time left today</p>
+                <p id="timeRemaining" class="text-lg font-extrabold text-indigo-600 tabular-nums mt-0.5">—</p>
+                <div class="mt-2 h-1.5 w-full sm:w-44 rounded-full bg-slate-100 overflow-hidden">
+                  <div id="dayProgressBar" class="h-full rounded-full bg-indigo-500 transition-all duration-500" style="width:0%"></div>
+                </div>
+              </div>
+            </section>
+
             <!-- Today progress hero -->
             <section class="progress-hero relative overflow-hidden rounded-2xl p-6 sm:p-7 text-white">
               <div class="hero-glow"></div>

@@ -575,6 +575,24 @@
     }
   }
 
+  /* ---------- Live clock + time remaining today ---------- */
+  function updateClock() {
+    const t = $('#clockTime');
+    if (!t) return;
+    const now = new Date();
+    t.textContent = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    $('#clockDate').textContent = now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Remaining until midnight + how much of the day has elapsed.
+    const end = new Date(now); end.setHours(24, 0, 0, 0);
+    const msLeft = end - now;
+    const minsLeft = Math.floor(msLeft / 60000);
+    const h = Math.floor(minsLeft / 60), m = minsLeft % 60;
+    $('#timeRemaining').textContent = `${h}h ${String(m).padStart(2, '0')}m left`;
+    const elapsedPct = Math.min(100, Math.max(0, (1 - msLeft / 86400000) * 100));
+    $('#dayProgressBar').style.width = elapsedPct.toFixed(1) + '%';
+  }
+
   /* ---------- Today's Focus ---------- */
   function renderToday() {
     const todayTasks = state.todayTaskIds
@@ -1386,6 +1404,10 @@
 
     // New tasks default to a deadline one week out.
     $('#taskDeadline').value = defaultDeadline();
+
+    // Live clock on the Today's Focus screen.
+    updateClock();
+    setInterval(updateClock, 1000);
 
     // Connect to the cloud (Google sign-in + sync) if it's configured.
     initCloud();
