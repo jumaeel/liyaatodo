@@ -258,10 +258,17 @@
                 <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Today's Focus</h2>
                 <p class="text-slate-500 mt-1">Pick up to 5 tasks you'll finish today — from any project.</p>
               </div>
-              <button id="addTodayTask" class="dash-btn-primary">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                Pick Tasks
-              </button>
+              <div class="flex items-center gap-2 shrink-0">
+                <button id="todayFullscreenBtn" class="dash-btn-ghost" title="Fullscreen focus mode">
+                  <svg class="w-4 h-4 fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                  <svg class="w-4 h-4 fs-close hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                  <span class="hidden sm:inline fs-label">Fullscreen</span>
+                </button>
+                <button id="addTodayTask" class="dash-btn-primary">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Pick Tasks
+                </button>
+              </div>
             </div>
 
             <!-- Live clock + time remaining today -->
@@ -351,6 +358,10 @@
                 <p id="activeProjectMeta" class="text-slate-500 mt-1">Plan, prioritize, and accomplish your tasks with ease.</p>
               </div>
               <div class="flex items-center gap-2 shrink-0">
+                <button id="renameProjectBtn" class="dash-btn-ghost" title="Rename this project">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                  <span class="hidden sm:inline">Rename</span>
+                </button>
                 <button id="deleteProjectBtn" class="dash-btn-ghost" title="Delete this project">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
                   <span class="hidden sm:inline">Delete</span>
@@ -774,6 +785,31 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename Project Modal -->
+  <div id="renameProjectModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div id="renameProjectOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    <div class="relative h-full grid place-items-center p-4">
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900">Rename project</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Give this project a new name.</p>
+          </div>
+          <button id="renameProjectClose" class="w-8 h-8 grid place-items-center rounded-lg hover:bg-slate-100 text-slate-400 text-lg font-bold leading-none transition">&times;</button>
+        </div>
+        <form id="renameProjectForm" class="mt-4 space-y-3">
+          <input id="renameProjectInput" type="text" maxlength="30" placeholder="Project name…"
+            class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+          <button type="submit"
+            class="w-full py-3 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition shadow-sm">
+            Save
+          </button>
+        </form>
       </div>
     </div>
   </div>

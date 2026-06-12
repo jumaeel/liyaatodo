@@ -404,12 +404,14 @@
     const list = $('#projectList');
     list.innerHTML = '';
 
-    state.projects.forEach((proj) => {
+    state.projects.forEach((proj, idx) => {
       const tasks = tasksFor(proj.id);
       const total = tasks.length;
       const done = tasks.filter((t) => t.isCompleted).length;
       const pct = total === 0 ? 0 : Math.round((done / total) * 100);
       const isActive = proj.id === state.activeProjectId && screen === 'project';
+      const isFirst = idx === 0;
+      const isLast = idx === state.projects.length - 1;
 
       const btn = document.createElement('button');
       btn.className = 'project-item' + (isActive ? ' is-active' : '');
@@ -419,8 +421,19 @@
           <span class="project-dot"></span>
           <span class="proj-name truncate">${escapeHTML(proj.name)}</span>
           <span class="proj-count">${total}</span>
-          <span class="proj-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
-            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          <span class="proj-actions">
+            <span class="proj-act" title="Move up" data-action="move-up" data-id="${proj.id}" ${isFirst ? 'data-disabled="1"' : ''}>
+              <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+            </span>
+            <span class="proj-act" title="Move down" data-action="move-down" data-id="${proj.id}" ${isLast ? 'data-disabled="1"' : ''}>
+              <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+            <span class="proj-act" title="Rename project" data-action="rename-project" data-id="${proj.id}">
+              <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </span>
+            <span class="proj-act proj-act-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
+              <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            </span>
           </span>
         </span>
         <span class="proj-bar" title="${done}/${total} completed (${pct}%)">
@@ -573,6 +586,34 @@
         projEl.appendChild(row);
       });
     }
+  }
+
+  /* ---------- Fullscreen focus mode ---------- */
+  function isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function toggleFullscreen() {
+    const el = document.documentElement;
+    if (!isFullscreen()) {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el).catch(() => toast('Fullscreen not available'));
+      else toast('Fullscreen not supported here');
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+  }
+
+  function syncFullscreenBtn() {
+    const btn = $('#todayFullscreenBtn');
+    if (!btn) return;
+    const on = isFullscreen();
+    btn.querySelector('.fs-open').classList.toggle('hidden', on);
+    btn.querySelector('.fs-close').classList.toggle('hidden', !on);
+    const label = btn.querySelector('.fs-label');
+    if (label) label.textContent = on ? 'Exit' : 'Fullscreen';
+    // When entering fullscreen, jump to the Today's Focus screen.
+    if (on && screen !== 'today') { switchScreen('today'); renderToday(); renderSidebar(); }
   }
 
   /* ---------- Rotating motivation quotes (Today's Focus) ---------- */
@@ -1015,6 +1056,48 @@
     toast('Project deleted');
   }
 
+  function moveProject(id, dir) {
+    const i = state.projects.findIndex((p) => p.id === id);
+    if (i < 0) return;
+    const j = dir === 'up' ? i - 1 : i + 1;
+    if (j < 0 || j >= state.projects.length) return;
+    [state.projects[i], state.projects[j]] = [state.projects[j], state.projects[i]];
+    save();
+    renderSidebar();
+    if (screen === 'dashboard') renderDashboard();
+  }
+
+  /* ---------- Rename a project ---------- */
+  let renamingProjectId = null;
+
+  function openRenameProject(id) {
+    const proj = state.projects.find((p) => p.id === id);
+    if (!proj) return;
+    renamingProjectId = id;
+    const input = $('#renameProjectInput');
+    input.value = proj.name;
+    $('#renameProjectModal').classList.remove('hidden');
+    setTimeout(() => { input.focus(); input.select(); }, 50);
+  }
+
+  function closeRenameProject() {
+    $('#renameProjectModal').classList.add('hidden');
+    renamingProjectId = null;
+  }
+
+  function saveRenameProject(e) {
+    e.preventDefault();
+    const proj = state.projects.find((p) => p.id === renamingProjectId);
+    if (!proj) { closeRenameProject(); return; }
+    const name = $('#renameProjectInput').value.trim();
+    if (!name) return;
+    proj.name = name;
+    save();
+    render();
+    closeRenameProject();
+    toast('Project renamed');
+  }
+
   function selectProject(id) {
     state.activeProjectId = id;
     filter = 'all';
@@ -1255,8 +1338,19 @@
 
     // --- Project list (sidebar) ---
     $('#projectList').addEventListener('click', (e) => {
-      const delBtn = e.target.closest('[data-action="del-project"]');
-      if (delBtn) { e.stopPropagation(); deleteProject(delBtn.dataset.id); return; }
+      const act = e.target.closest('[data-action]');
+      if (act) {
+        e.stopPropagation();
+        if (act.dataset.disabled === '1') return;
+        const id = act.dataset.id;
+        switch (act.dataset.action) {
+          case 'del-project':    deleteProject(id); break;
+          case 'rename-project': openRenameProject(id); break;
+          case 'move-up':        moveProject(id, 'up'); break;
+          case 'move-down':      moveProject(id, 'down'); break;
+        }
+        return;
+      }
       const item = e.target.closest('.project-item');
       if (item) selectProject(item.dataset.id);
     });
@@ -1335,6 +1429,11 @@
       if (action.dataset.action === 'edit') { openEditTask(id); }
     });
 
+    // --- Today: fullscreen focus mode ---
+    $('#todayFullscreenBtn').addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', syncFullscreenBtn);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenBtn);
+
     // --- Today: pick tasks ---
     $('#addTodayTask').addEventListener('click', openTaskPicker);
     $('#addTodayTaskEmpty').addEventListener('click', openTaskPicker);
@@ -1344,7 +1443,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); }
     });
 
     // --- Drag & drop ---
@@ -1409,6 +1508,14 @@
     $('#editTaskForm').addEventListener('submit', saveEditTask);
     $('#editTaskClose').addEventListener('click', closeEditTask);
     $('#editTaskOverlay').addEventListener('click', closeEditTask);
+
+    // --- Rename project ---
+    $('#renameProjectBtn').addEventListener('click', () => {
+      if (state.activeProjectId) openRenameProject(state.activeProjectId);
+    });
+    $('#renameProjectForm').addEventListener('submit', saveRenameProject);
+    $('#renameProjectClose').addEventListener('click', closeRenameProject);
+    $('#renameProjectOverlay').addEventListener('click', closeRenameProject);
 
     // --- Dark mode toggle ---
     $('#themeToggle').addEventListener('click', () => {

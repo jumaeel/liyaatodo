@@ -4,6 +4,10 @@
 
 html, body { height: 100%; }
 
+/* Fullscreen focus mode keeps the app's backdrop */
+html:fullscreen { background: #f5f6fb; }
+html.dark:fullscreen { background: #0b1120; }
+
 /* Smooth percentage animation for the conic ring */
 @property --pct { syntax: '<number>'; inherits: false; initial-value: 0; }
 
@@ -126,13 +130,28 @@ button, a, input, select, .project-item, .task-row {
   border-radius: 999px;
 }
 .project-item.is-active .proj-count { background: #e0e3fd; color: #5b6cf2; }
-.project-item .proj-del {
+/* Hover action cluster (move / rename / delete) */
+.proj-actions {
+  display: flex; align-items: center; gap: 1px;
   margin-left: 6px;
   opacity: 0;
-  color: #cbd5e1;
+  transition: opacity .15s ease;
 }
-.project-item:hover .proj-del { opacity: 1; }
-.project-item .proj-del:hover { color: #ef4444; }
+.project-item:hover .proj-actions,
+.project-item.is-active .proj-actions { opacity: 1; }
+.project-item:hover .proj-count { display: none; }
+.proj-act {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  color: #94a3b8;
+}
+.proj-act:hover { background: #e2e8f0; color: #334155; }
+.proj-act-del:hover { background: #fef2f2; color: #ef4444; }
+.proj-act[data-disabled="1"] { opacity: .3; pointer-events: none; }
+.dark .proj-act { color: #64748b; }
+.dark .proj-act:hover { background: #334155; color: #e2e8f0; }
+.dark .proj-act-del:hover { background: rgba(239,68,68,.15); color: #f87171; }
 
 /* ---- Filter chips ---- */
 .filter-chip {
