@@ -14,6 +14,7 @@
     tasks: [],           // { id, projectId, title, priority, deadline, isCompleted, urgent, important }
     activeProjectId: null,
     todayTaskIds: [],    // up to 5 task IDs selected for today
+    user: { name: '' },  // the person using the app
   };
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
@@ -53,6 +54,7 @@
         tasks: parsed.tasks,
         activeProjectId: parsed.activeProjectId ?? null,
         todayTaskIds: Array.isArray(parsed.todayTaskIds) ? parsed.todayTaskIds : [],
+        user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
       };
     }
 
@@ -124,6 +126,7 @@
      ============================================================ */
 
   function render() {
+    renderUser();
     renderSidebar();
     if (screen === 'dashboard') renderDashboard();
     if (screen === 'today') renderToday();
@@ -132,6 +135,46 @@
       renderProgress();
       renderView();
     }
+  }
+
+  /* ---------- User ---------- */
+  function userInitials(name) {
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+  }
+
+  function renderUser() {
+    const name = state.user.name.trim();
+    $('#userAvatar').textContent = name ? userInitials(name) : '?';
+    $('#userName').textContent = name || 'Set your name';
+    const eyebrow = $('#bannerEyebrow');
+    if (eyebrow) {
+      eyebrow.textContent = name
+        ? `Welcome back, ${name} — your productivity, organized`
+        : 'Your productivity, organized';
+    }
+  }
+
+  function openUserModal() {
+    $('#userModal').classList.remove('hidden');
+    const input = $('#userNameInput');
+    input.value = state.user.name;
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeUserModal() {
+    $('#userModal').classList.add('hidden');
+  }
+
+  function saveUser(e) {
+    e.preventDefault();
+    const name = $('#userNameInput').value.trim();
+    state.user.name = name;
+    save();
+    renderUser();
+    closeUserModal();
+    if (name) toast(`👋 Welcome, ${name}!`);
   }
 
   function renderSidebar() {
@@ -479,7 +522,7 @@
     if (total === 0) sub = 'Add a task to get started';
     else if (pct === 100) sub = '🎉 All done — great work!';
     else if (pct >= 50) sub = 'Over halfway there!';
-    else sub = 'Let's build some momentum.';
+    else sub = "Let's build some momentum.";
     $('#progressSubLabel').textContent = sub;
   }
 
@@ -955,6 +998,12 @@
     $('#addProjectQuick').addEventListener('click', () => {
       $('#newProjectInput').focus();
     });
+
+    // --- User profile ---
+    $('#userBtn').addEventListener('click', openUserModal);
+    $('#userModalClose').addEventListener('click', closeUserModal);
+    $('#userModalOverlay').addEventListener('click', closeUserModal);
+    $('#userForm').addEventListener('submit', saveUser);
   }
 
   function syncFilterChips() {
@@ -992,9 +1041,29 @@
     switchScreen('dashboard');
     render();
 
+    // First run: ask for the user's name.
+    if (!state.user.name) {
+      setTimeout(openUserModal, 600);
+    }
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker
+          .register('sw.js', { updateViaCache: 'none' })
+          .then((reg) => {
+            // Check for a newer version on every load.
+            reg.update().catch(() => {});
+          })
+          .catch(() => {});
+
+        // When a new service worker takes control, reload once so
+        // HTML/CSS/JS are never mixed between versions.
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
       });
     }
   }

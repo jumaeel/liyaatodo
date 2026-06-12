@@ -1,5 +1,5 @@
-/* Liyaatodo · service worker — offline-first app shell cache */
-const CACHE = 'liyaatodo-v3';
+/* Liyaatodo · service worker — network-first app shell, offline fallback */
+const CACHE = 'liyaatodo-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -26,20 +26,42 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Cache-first for our own assets, network fallback (and cache new GETs).
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
+  const url = new URL(request.url);
+  const isShell =
+    url.origin === self.location.origin &&
+    (request.mode === 'navigate' ||
+      /\.(?:html|css|js|json)$/.test(url.pathname) ||
+      url.pathname.endsWith('/'));
+
+  if (isShell) {
+    // Network-first: always pick up the latest deploy; cache is the offline fallback.
+    event.respondWith(
+      fetch(request)
         .then((resp) => {
-          // Only cache same-origin, successful, basic responses.
           if (resp && resp.status === 200 && resp.type === 'basic') {
             const clone = resp.clone();
             caches.open(CACHE).then((cache) => cache.put(request, clone));
           }
           return resp;
         })
-        .catch(() => cached); // offline + uncached → undefined (graceful)
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match('./index.html'))
+        )
+    );
+    return;
+  }
+
+  // Everything else (fonts, CDN): cache-first with network fill.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((resp) => {
+        if (resp && resp.status === 200) {
+          const clone = resp.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, clone));
+        }
+        return resp;
+      });
     })
   );
 });
