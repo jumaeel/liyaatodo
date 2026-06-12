@@ -1,5 +1,5 @@
 /* ============================================================
-   Momentum · Daily Progress Dashboard
+   Liyaaa To-Do · Daily Progress Dashboard
    Vanilla JS · LocalStorage persistence
    ============================================================ */
 

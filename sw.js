@@ -1,5 +1,5 @@
-/* Momentum · service worker — offline-first app shell cache */
-const CACHE = 'momentum-v1';
+/* Liyaaa To-Do · service worker — offline-first app shell cache */
+const CACHE = 'liyaaa-v2';
 const ASSETS = [
   './',
   './index.html',
