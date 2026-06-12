@@ -1,0 +1,153 @@
+/* ===== Momentum · custom styles (complements Tailwind) ===== */
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; }
+
+/* Smooth, refined scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: #cbd5e1; background-clip: content-box; }
+
+/* Global easing for interactive elements */
+button, a, input, select, .project-item, .task-row {
+  transition: all 0.3s ease;
+}
+
+/* ---- Sidebar project item ---- */
+.project-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  text-align: left;
+}
+.project-item:hover { background: #f1f5f9; }
+.project-item.is-active {
+  background: linear-gradient(to right, #eef2ff, #f5f3ff);
+  color: #4338ca;
+  font-weight: 600;
+}
+.project-item.is-active .project-dot { background: #6366f1; }
+.project-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: #cbd5e1; flex-shrink: 0;
+}
+.project-item .proj-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.project-item.is-active .proj-count { background: #e0e7ff; color: #6366f1; }
+.project-item .proj-del {
+  margin-left: 6px;
+  opacity: 0;
+  color: #cbd5e1;
+}
+.project-item:hover .proj-del { opacity: 1; }
+.project-item .proj-del:hover { color: #ef4444; }
+
+/* ---- Filter chips ---- */
+.filter-chip {
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+.filter-chip:hover { border-color: #c7d2fe; color: #4f46e5; }
+.filter-chip.is-active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+/* ---- Task row ---- */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  animation: taskIn 0.3s ease both;
+}
+.task-row:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(15,23,42,.06); }
+
+@keyframes taskIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom checkbox */
+.task-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 7px;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  background: #fff;
+}
+.task-check:hover { border-color: #6366f1; }
+.task-check:checked {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+.task-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px; top: 2px;
+  width: 6px; height: 11px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.task-title { font-size: 0.95rem; font-weight: 500; color: #1e293b; line-height: 1.3; word-break: break-word; }
+.task-row.is-done .task-title { text-decoration: line-through; color: #94a3b8; font-weight: 400; }
+.task-row.is-done { background: #f8fafc; }
+
+/* Priority badges */
+.badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-High   { background: #fee2e2; color: #dc2626; }
+.badge-Medium { background: #ffedd5; color: #ea580c; }
+.badge-Low    { background: #f1f5f9; color: #64748b; }
+
+.due { font-size: 0.75rem; color: #64748b; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.due.overdue { color: #dc2626; font-weight: 700; }
+
+.task-del {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 9px;
+  color: #cbd5e1;
+}
+.task-del:hover { color: #ef4444; background: #fef2f2; }
+
+/* Toast visible state (keeps horizontal centering) */
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
