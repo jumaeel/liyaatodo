@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f8fafc",
-  "theme_color": "#6366f1",
+  "theme_color": "#059669",
   "icons": [
     {
       "src": "logo-mark.svg",
