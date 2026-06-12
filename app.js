@@ -33,7 +33,8 @@
     ));
 
   /* ---------- Persistence ---------- */
-  function save() {
+  // Local write only.
+  function saveLocal() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (err) {
@@ -42,12 +43,15 @@
     }
   }
 
-  function load() {
-    let parsed = null;
-    try {
-      parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    } catch { parsed = null; }
+  // Every mutation calls this: persist locally AND (if signed in) to the cloud.
+  function save() {
+    saveLocal();
+    queueCloudPush();
+  }
 
+  // Replace the in-memory state from a parsed object (local OR cloud), then
+  // normalize/migrate it. Does NOT write anything.
+  function setStateFrom(parsed) {
     if (parsed && Array.isArray(parsed.projects) && Array.isArray(parsed.tasks)) {
       state = {
         projects: parsed.projects,
@@ -57,29 +61,190 @@
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
       };
     }
+    normalizeState();
+  }
 
-    // Seed the default "General" project on first load.
+  function normalizeState() {
+    // Seed the default "General" project when there are none.
     if (state.projects.length === 0) {
       const general = { id: uid(), name: 'General' };
       state.projects.push(general);
       state.activeProjectId = general.id;
-      save();
     }
-
     // Guarantee a valid active project.
     if (!state.projects.some((p) => p.id === state.activeProjectId)) {
       state.activeProjectId = state.projects[0]?.id ?? null;
     }
-
     // Migrate older tasks that predate the Eisenhower fields.
     state.tasks.forEach((t) => {
       if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
       if (typeof t.urgent !== 'boolean') t.urgent = false;
     });
-
     // Clean up stale todayTaskIds.
     const taskIds = new Set(state.tasks.map((t) => t.id));
     state.todayTaskIds = state.todayTaskIds.filter((id) => taskIds.has(id));
+  }
+
+  function load() {
+    let parsed = null;
+    try {
+      parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch { parsed = null; }
+    setStateFrom(parsed);
+    saveLocal();
+  }
+
+  /* ============================================================
+     CLOUD SYNC  (Firebase Auth + Firestore)
+     Signed in → every change is mirrored to users/{uid} and pulled
+     back on other devices in real time. Signed out → local only.
+     ============================================================ */
+  const Cloud = {
+    enabled: false,    // config present + SDK loaded + init OK
+    db: null,
+    user: null,
+    unsub: null,       // Firestore listener teardown
+    applying: false,   // true while writing remote→local (suppresses echo writes)
+    pushTimer: null,
+    lastStamp: 0,      // most recent stamp we've written or applied
+  };
+
+  function cloudConfigured() {
+    const c = window.firebaseConfig;
+    return !!(c && typeof c.apiKey === 'string' && !c.apiKey.startsWith('PASTE_'));
+  }
+
+  function initCloud() {
+    if (!cloudConfigured() || typeof firebase === 'undefined') {
+      renderAuth();
+      return;
+    }
+    try {
+      firebase.initializeApp(window.firebaseConfig);
+      Cloud.db = firebase.firestore();
+      Cloud.enabled = true;
+      firebase.auth().onAuthStateChanged(onAuthChanged);
+    } catch (err) {
+      console.error('Firebase init failed:', err);
+      Cloud.enabled = false;
+    }
+    renderAuth();
+  }
+
+  function cloudSignIn() {
+    if (!Cloud.enabled) { toast('Cloud sign-in is not set up yet'); return; }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch((err) => {
+      console.error('Sign-in failed:', err);
+      toast('Sign-in failed — ' + (err.code || err.message || 'try again'));
+    });
+  }
+
+  function cloudSignOut() {
+    if (!Cloud.enabled) return;
+    firebase.auth().signOut().then(() => toast('Signed out — saved on this device'));
+  }
+
+  function onAuthChanged(user) {
+    Cloud.user = user;
+    if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+
+    if (user) {
+      // Adopt the Google first name if the user hasn't set their own.
+      if (!state.user.name && user.displayName) {
+        state.user.name = user.displayName.split(/\s+/)[0] || user.displayName;
+        saveLocal();
+      }
+      subscribeCloud(user.uid);
+      toast('Signed in — your progress is saved to your account ☁️');
+    }
+    renderAuth();
+    renderUser();
+  }
+
+  function userDoc(uid) {
+    return Cloud.db.collection('users').doc(uid);
+  }
+
+  // Listen to the user's cloud document. First snapshot decides the merge:
+  //   • no cloud copy yet  → push whatever is local now (protects this device's data)
+  //   • cloud copy exists  → pull it (this is the account's source of truth)
+  function subscribeCloud(uid) {
+    let first = true;
+    Cloud.unsub = userDoc(uid).onSnapshot(
+      (snap) => {
+        const data = snap.data();
+        if (first) {
+          first = false;
+          if (!data || !data.state) { pushToCloud(); return; }
+        }
+        if (!data || !data.state) return;
+        if ((data.stamp || 0) <= Cloud.lastStamp) return; // our own echo / nothing newer
+        applyRemoteState(data.state, data.stamp || 0);
+      },
+      (err) => console.error('Cloud listen error:', err)
+    );
+  }
+
+  function applyRemoteState(remote, stamp) {
+    Cloud.applying = true;
+    Cloud.lastStamp = stamp;
+    setStateFrom(remote);
+    saveLocal();
+    render();
+    Cloud.applying = false;
+  }
+
+  function queueCloudPush() {
+    if (!Cloud.enabled || !Cloud.user || Cloud.applying) return;
+    setSyncStatus('saving');
+    clearTimeout(Cloud.pushTimer);
+    Cloud.pushTimer = setTimeout(pushToCloud, 600);
+  }
+
+  function pushToCloud() {
+    if (!Cloud.enabled || !Cloud.user) return;
+    const stamp = Date.now();
+    Cloud.lastStamp = stamp;
+    const payload = JSON.parse(JSON.stringify(state)); // plain, no undefined
+    userDoc(Cloud.user.uid)
+      .set({ state: payload, stamp, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => setSyncStatus('saved'))
+      .catch((err) => { console.error('Cloud save failed:', err); setSyncStatus('error'); });
+  }
+
+  function renderAuth() {
+    const unconf = $('#authUnconfigured');
+    if (!unconf) return; // modal not in DOM
+    const out = $('#authSignedOut');
+    const inn = $('#authSignedIn');
+
+    if (!Cloud.enabled) {
+      unconf.classList.remove('hidden');
+      out.classList.add('hidden');
+      inn.classList.add('hidden');
+      return;
+    }
+    unconf.classList.add('hidden');
+
+    if (Cloud.user) {
+      out.classList.add('hidden');
+      inn.classList.remove('hidden');
+      $('#authEmail').textContent = Cloud.user.email || Cloud.user.displayName || 'Signed in';
+      $('#authAvatar').textContent = userInitials(Cloud.user.displayName || Cloud.user.email || '?');
+      setSyncStatus('saved');
+    } else {
+      out.classList.remove('hidden');
+      inn.classList.add('hidden');
+    }
+  }
+
+  function setSyncStatus(s) {
+    const el = $('#authStatus');
+    if (!el) return;
+    if (s === 'saving')      { el.textContent = 'Saving…'; el.className = 'text-xs text-slate-400'; }
+    else if (s === 'error')  { el.textContent = 'Save failed — will retry on next change'; el.className = 'text-xs text-red-500'; }
+    else                     { el.textContent = 'Synced ✓ — saved to your account'; el.className = 'text-xs text-emerald-600'; }
   }
 
   /* ---------- Date helpers ---------- */
@@ -158,6 +323,7 @@
 
   function openUserModal() {
     $('#userModal').classList.remove('hidden');
+    renderAuth();
     const input = $('#userNameInput');
     input.value = state.user.name;
     setTimeout(() => input.focus(), 50);
@@ -1004,6 +1170,10 @@
     $('#userModalClose').addEventListener('click', closeUserModal);
     $('#userModalOverlay').addEventListener('click', closeUserModal);
     $('#userForm').addEventListener('submit', saveUser);
+
+    // --- Cloud sign in / out ---
+    $('#cloudSignInBtn').addEventListener('click', cloudSignIn);
+    $('#cloudSignOutBtn').addEventListener('click', cloudSignOut);
   }
 
   function syncFilterChips() {
@@ -1040,6 +1210,9 @@
     syncFilterChips();
     switchScreen('dashboard');
     render();
+
+    // Connect to the cloud (Google sign-in + sync) if it's configured.
+    initCloud();
 
     // First run: ask for the user's name.
     if (!state.user.name) {

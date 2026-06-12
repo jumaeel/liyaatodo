@@ -1,10 +1,11 @@
 /* Liyaatodo · service worker — network-first app shell, offline fallback */
-const CACHE = 'liyaatodo-v6';
+const CACHE = 'liyaatodo-v7';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './firebase-config.js',
   './manifest.json',
   './logo-mark.svg',
 ];
