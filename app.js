@@ -575,6 +575,57 @@
     }
   }
 
+  /* ---------- Rotating motivation quotes (Today's Focus) ---------- */
+  const QUOTES = [
+    { text: "And that there is not for man except that [good] for which he strives.", source: "Quran 53:39 🎯", note: "Your future isn't defined by what you wish for; it is defined by what you actively work for. 📈" },
+    { text: "Indeed, Allah will not change the condition of a people until they change what is in themselves.", source: "Quran 13:11 🌱", note: "Growth starts with you. Don't wait for your circumstances to change before you start working. 🚀" },
+    { text: "O Allah, I seek refuge in You from anxiety and sorrow, and I seek refuge in You from helplessness and laziness.", source: "Prophet Muhammad ﷺ 🛡️", note: "The Prophet actively made Dua against laziness — treat it like the enemy to your potential that it is. ❌" },
+    { text: "Take benefit of five before five: your youth before your old age, your health before your sickness, your wealth before your poverty, your free time before your preoccupation, and your life before your death.", source: "Prophet Muhammad ﷺ ⏳", note: "" },
+    { text: "A strong believer is better and more beloved to Allah than a weak believer, and there is good in everyone. Cherish that which benefits you, seek help from Allah, and do not feel helpless.", source: "Prophet Muhammad ﷺ 💪", note: "" },
+    { text: "The iron is rust-eaten if it is not used; stagnant water loses its purity… even so does inaction sap the vigour of the mind.", source: "Islamic Wisdom ⚙️", note: "" },
+    { text: "Laziness is nothing more than the habit of resting before you get tired. Get up and build something that outlives you.", source: "Unknown 🏗️", note: "" },
+    { text: "Your alarm for Fajr is your first test of discipline for the day. If you can conquer your blanket, you can conquer your dreams.", source: "Unknown ☀️🌅", note: "" },
+    { text: "Shaytan loves an idle mind and a lazy body. Keep yourself moving, keep yourself working, and keep yourself relevant.", source: "Unknown 🧠🏃", note: "" },
+    { text: "Do not treat your youth as a vacation from responsibility. It is the foundation of your entire legacy.", source: "Unknown 💎", note: "" },
+    { text: "So when you have finished [your duties], then stand up [for worship]. And to your Lord direct [your] longing.", source: "Quran 94:7-8 🔄", note: "Move directly from one productive task to another. True rest comes in Jannah. 🌌" },
+    { text: "Indeed, Allah loves that when one of you does something, he does it with excellence (Ihsan).", source: "Prophet Muhammad ﷺ ✨", note: "Don't just aim to get by. Aim for top-tier quality, because Allah loves elite effort. 🏆" },
+    { text: "Tomorrow is a hope, yesterday is a dream, today is a reality — act now.", source: "Umar ibn al-Khattāb 🗓️⚡", note: "" },
+    { text: "Knowledge without action is insanity, and action without knowledge is vanity.", source: "Imam Al-Ghazali 📚🛠️", note: "" },
+    { text: "Work for this world as if you will live forever, and work for the Hereafter as if you will die tomorrow.", source: "Ali ibn Abi Talib 🌍💫", note: "Build impactful projects in this life, but keep your heart tied to the Next. 👑" },
+    { text: "Do not let your difficulties fill you with anxiety; after all, it is only in the darkest nights that stars shine more brightly.", source: "Ali ibn Abi Talib 🌃⭐", note: "" },
+    { text: "You are part of an Ummah built by young people who shook the world. Stop scrolling and start building.", source: "Unknown 🛠️", note: "" },
+    { text: "When you build a halal business, study your major, or code an app with the intention to serve people and please Allah, your work becomes worship.", source: "Unknown 💻💼", note: "" },
+    { text: "Excuses don't build empires, nor do they earn Jannah. Show up even when you don't feel like it.", source: "Unknown 🥊", note: "" },
+    { text: "Look at the companions of the Prophet — they were young, bold, ambitious and incredibly hardworking. Match their energy.", source: "Unknown ⚡🔥", note: "" },
+    { text: "Actions are judged by intentions.", source: "Prophet Muhammad ﷺ 🫀", note: "A pure intention (Niyyah) turns your long study hours into heavy good deeds. ⚖️" },
+    { text: "The best among you are those who have the best manners and character.", source: "Prophet Muhammad ﷺ 🤝", note: "" },
+    { text: "A pure intention rewrites the value of your daily grind. You aren't just working for a grade — you're working to elevate the Ummah.", source: "Unknown 🌍", note: "" },
+    { text: "Success isn't about being better than anyone else. It's about being better than you were yesterday, for the sake of Allah.", source: "Unknown 🔄📈", note: "" },
+    { text: "Do your absolute best, tie your camel with precision, and let Allah handle the results. True peace is knowing you gave it 100%.", source: "Unknown 🐫🔒", note: "" },
+    { text: "Consistency is the bridge between goals and accomplishment. A little work done every single day is beloved to Allah.", source: "Unknown 📅🧱", note: "" },
+    { text: "Don't study just to get rich. Study to be wise, capable, and a source of strength for everyone around you.", source: "Unknown 🎓", note: "" },
+    { text: "Your potential is a gift from Allah. What you do with that potential is your gift back to Him.", source: "Unknown 🎁✨", note: "" },
+    { text: "Stop waiting for the 'perfect moment' or for 'motivation' to hit. Discipline over mood, always.", source: "Unknown ⏳", note: "" },
+    { text: "The ultimate success is walking into Jannah knowing you didn't waste the life, the intellect, or the youth Allah trusted you with.", source: "Unknown 👑🏡", note: "" },
+  ];
+  let quoteIdx = 0;
+
+  function renderQuote() {
+    const el = $('#quoteText');
+    if (!el) return;
+    const q = QUOTES[quoteIdx % QUOTES.length];
+    el.textContent = `“${q.text}”`;
+    $('#quoteSource').textContent = `— ${q.source}`;
+    const noteEl = $('#quoteNote');
+    if (q.note) { noteEl.textContent = q.note; noteEl.classList.remove('hidden'); }
+    else { noteEl.classList.add('hidden'); }
+  }
+
+  function rotateQuote() {
+    quoteIdx = (quoteIdx + 1) % QUOTES.length;
+    renderQuote();
+  }
+
   /* ---------- Live clock + time remaining today ---------- */
   function updateClock() {
     const t = $('#clockTime');
@@ -1408,6 +1459,11 @@
     // Live clock on the Today's Focus screen.
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Rotating motivation quote — changes every 5 minutes.
+    quoteIdx = Math.floor(Date.now() / 300000) % QUOTES.length;
+    renderQuote();
+    setInterval(rotateQuote, 300000);
 
     // Connect to the cloud (Google sign-in + sync) if it's configured.
     initCloud();

@@ -581,6 +581,26 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 }
 .today-slot:hover { border-color: #c2c8fa; color: #5b6cf2; background: #eef0fe; }
 
+/* ===== Today's Focus · rotating quote ===== */
+.quote-card {
+  background: linear-gradient(135deg, #eef0fe 0%, #f6f3ff 100%);
+  border: 1px solid #e0e3fd;
+}
+.quote-card .quote-mark {
+  position: absolute; top: -6px; right: 8px;
+  width: 96px; height: 96px;
+  color: #5b6cf2; opacity: .12; pointer-events: none;
+}
+#quoteText { color: #1e293b; }
+.dark .quote-card {
+  background: linear-gradient(135deg, #1d2547 0%, #221c40 100%);
+  border-color: #343b6b;
+}
+.dark .quote-card .quote-mark { color: #8b97f7; opacity: .15; }
+.dark #quoteText { color: #f1f5f9; }
+.dark #quoteSource { color: #a5b0f7 !important; }
+.dark #quoteNote { color: #94a3b8 !important; }
+
 /* ===== How-to guide cards ===== */
 .guide-card {
   background: #fff;
