@@ -551,6 +551,38 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 }
 .today-slot:hover { border-color: #c2c8fa; color: #5b6cf2; background: #eef0fe; }
 
+/* ===== How-to guide cards ===== */
+.guide-card {
+  background: #fff;
+  border: 1px solid #e9edf3;
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 12px -8px rgba(15,23,42,.08);
+  display: flex; flex-direction: column;
+}
+.guide-card:hover {
+  transform: translateY(-3px);
+  border-color: #c2c8fa;
+  box-shadow: 0 14px 28px -14px rgba(79,80,219,.35);
+}
+.gc-art {
+  border-radius: 12px;
+  background: #f8f9ff;
+  overflow: hidden;
+  margin-bottom: .8rem;
+}
+.gc-art svg { width: 100%; height: auto; display: block; }
+.gc-title { font-weight: 800; font-size: .92rem; color: #1e293b; }
+.gc-text { font-size: .8rem; color: #64748b; margin-top: .25rem; line-height: 1.45; }
+
+.dark .guide-card { background: #1e293b; border-color: #2f3b52; }
+.dark .guide-card:hover { border-color: #4750db; box-shadow: 0 14px 28px -14px rgba(0,0,0,.5); }
+.dark .gc-art { background: #0f172a; }
+.dark .gc-title { color: #e2e8f0; }
+.dark .gc-text { color: #94a3b8; }
+
 /* Task picker modal */
 .picker-backdrop {
   position: fixed; inset: 0; background: rgba(15,23,42,.5);

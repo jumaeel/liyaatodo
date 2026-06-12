@@ -447,6 +447,125 @@
               </div>
             </section>
 
+            <!-- Quick tour cards -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="font-extrabold text-slate-900 text-lg">Quick tour</h3>
+                <span class="text-xs text-slate-400">tap a card to try it</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                <!-- Card: Projects -->
+                <button class="guide-card" data-goto="project">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="22" y="30" width="52" height="50" rx="8" fill="#eef0fe"/>
+                      <path d="M22 38c0-4.4 3.6-8 8-8h12l6 7h26v43H30a8 8 0 0 1-8-8V38z" fill="#5b6cf2"/>
+                      <rect x="58" y="22" width="56" height="58" rx="8" fill="#c2c8fa"/>
+                      <path d="M58 30c0-4.4 3.6-8 8-8h13l6 7h29v43a8 8 0 0 1-8 8H58V30z" fill="#8b97f7"/>
+                      <rect x="96" y="36" width="42" height="44" rx="8" fill="#fbc55f"/>
+                      <path d="M96 44c0-4.4 3.6-8 8-8h9l5 6h20v38h-34a8 8 0 0 1-8-8V44z" fill="#f3a429"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">1 · Create projects</p>
+                  <p class="gc-text">One folder per area of life — Studies, Work, Home.</p>
+                </button>
+
+                <!-- Card: Tasks -->
+                <button class="guide-card" data-goto="project">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="35" y="14" width="90" height="72" rx="10" fill="#eef0fe"/>
+                      <rect x="46" y="26" width="14" height="14" rx="4" fill="#5b6cf2"/>
+                      <path d="M49.5 33l3 3 5-6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      <rect x="67" y="29" width="46" height="7" rx="3.5" fill="#c2c8fa"/>
+                      <rect x="46" y="48" width="14" height="14" rx="4" fill="#5b6cf2"/>
+                      <path d="M49.5 55l3 3 5-6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      <rect x="67" y="51" width="38" height="7" rx="3.5" fill="#c2c8fa"/>
+                      <rect x="46" y="70" width="14" height="14" rx="4" fill="#fff" stroke="#c2c8fa" stroke-width="2"/>
+                      <rect x="67" y="73" width="30" height="7" rx="3.5" fill="#e0e3fd"/>
+                      <path d="M118 84l14-14c2.2-2.2 2.2-5.8 0-8s-5.8-2.2-8 0l-14 14-2 10 10-2z" fill="#f3a429"/>
+                      <path d="M110 86l8-2-6-6-2 8z" fill="#f4517d"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">2 · Add tasks</p>
+                  <p class="gc-text">Title, priority, deadline and a time estimate like “30m”.</p>
+                </button>
+
+                <!-- Card: Today's Focus -->
+                <button class="guide-card" data-goto="today">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <circle cx="80" cy="50" r="34" fill="#eef0fe"/>
+                      <circle cx="80" cy="50" r="24" fill="#c2c8fa"/>
+                      <circle cx="80" cy="50" r="14" fill="#5b6cf2"/>
+                      <circle cx="80" cy="50" r="5" fill="#fff"/>
+                      <path d="M80 50L106 24" stroke="#f3a429" stroke-width="5" stroke-linecap="round"/>
+                      <path d="M106 24l8-2-2 8-8 2 2-8z" fill="#f3a429"/>
+                      <rect x="22" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
+                      <rect x="36" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
+                      <rect x="50" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
+                      <rect x="64" y="78" width="10" height="6" rx="3" fill="#e0e3fd"/>
+                      <rect x="78" y="78" width="10" height="6" rx="3" fill="#e0e3fd"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">3 · Pick Today’s Focus</p>
+                  <p class="gc-text">Up to 5 tasks from any project — your daily shortlist.</p>
+                </button>
+
+                <!-- Card: Dashboard -->
+                <button class="guide-card" data-goto="dashboard">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="24" y="16" width="112" height="68" rx="10" fill="#eef0fe"/>
+                      <path d="M52 76a28 28 0 1 1 56 0" stroke="#e0e3fd" stroke-width="9" stroke-linecap="round"/>
+                      <path d="M52 76a28 28 0 0 1 42-24" stroke="#5b6cf2" stroke-width="9" stroke-linecap="round"/>
+                      <rect x="114" y="58" width="8" height="18" rx="3" fill="#8b97f7"/>
+                      <rect x="114" y="40" width="8" height="14" rx="3" fill="#fbc55f" transform="translate(0 0)"/>
+                      <rect x="38" y="58" width="8" height="18" rx="3" fill="#8b97f7"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">4 · Watch progress</p>
+                  <p class="gc-text">Live stats, gauges and per-project bars on the Dashboard.</p>
+                </button>
+
+                <!-- Card: Matrix -->
+                <button class="guide-card" data-goto="project">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="34" y="14" width="44" height="34" rx="7" fill="#bbe7cd"/>
+                      <rect x="82" y="14" width="44" height="34" rx="7" fill="#f6d6c4"/>
+                      <rect x="34" y="52" width="44" height="34" rx="7" fill="#cfddf4"/>
+                      <rect x="82" y="52" width="44" height="34" rx="7" fill="#f5cccc"/>
+                      <rect x="40" y="22" width="22" height="5" rx="2.5" fill="#15803d" opacity=".55"/>
+                      <rect x="40" y="31" width="30" height="5" rx="2.5" fill="#15803d" opacity=".35"/>
+                      <rect x="88" y="22" width="26" height="5" rx="2.5" fill="#c2620c" opacity=".5"/>
+                      <rect x="40" y="60" width="26" height="5" rx="2.5" fill="#2563eb" opacity=".45"/>
+                      <rect x="88" y="60" width="22" height="5" rx="2.5" fill="#dc2626" opacity=".4"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">5 · Prioritise in the Matrix</p>
+                  <p class="gc-text">Drag tasks into Do, Schedule, Delegate or Delete.</p>
+                </button>
+
+                <!-- Card: Sync -->
+                <button class="guide-card" data-goto="account">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <path d="M52 70a18 18 0 0 1 2-35.9A24 24 0 0 1 100 28a20 20 0 0 1 8 38.9" fill="#c2c8fa"/>
+                      <path d="M48 76a16 16 0 0 1 2-31.9A22 22 0 0 1 94 38a18 18 0 0 1 7 35" fill="#5b6cf2"/>
+                      <path d="M71 72l8 8 13-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="124" cy="26" r="4" fill="#fbc55f"/>
+                      <circle cx="34" cy="30" r="3" fill="#f4517d"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">6 · Sign in &amp; sync</p>
+                  <p class="gc-text">Google sign-in saves progress to your account on every device.</p>
+                </button>
+
+              </div>
+            </div>
+
             <!-- Steps -->
             <div class="space-y-4">
 

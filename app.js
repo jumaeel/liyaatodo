@@ -1147,6 +1147,17 @@
     $('#guideNav').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
     $('#guideStartBtn').addEventListener('click', () => { switchScreen('dashboard'); render(); });
 
+    // --- Guide quick-tour cards ---
+    $$('.guide-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const goto = card.dataset.goto;
+        if (goto === 'dashboard')    { switchScreen('dashboard'); render(); }
+        else if (goto === 'today')   { switchScreen('today'); renderToday(); renderSidebar(); }
+        else if (goto === 'project') { if (state.activeProjectId) selectProject(state.activeProjectId); }
+        else if (goto === 'account') { openUserModal(); }
+      });
+    });
+
     // --- Dashboard quick buttons ---
     $('#dashNewProject').addEventListener('click', () => {
       $('#newProjectInput').focus();
