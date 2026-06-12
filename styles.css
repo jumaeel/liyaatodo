@@ -28,6 +28,11 @@ html:-webkit-full-screen #backdrop { display: none !important; }
   background-attachment: fixed;
 }
 
+/* Collapsible sidebar (desktop): hide the left bar, main content fills */
+@media (min-width: 1024px) {
+  body.sidebar-collapsed #sidebar { display: none; }
+}
+
 /* ---- Soft elevated card ---- */
 .soft-card { box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12); }
 

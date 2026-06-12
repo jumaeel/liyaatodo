@@ -1489,7 +1489,17 @@
     });
 
     // --- Mobile sidebar ---
-    $('#menuToggle').addEventListener('click', openSidebar);
+    $('#menuToggle').addEventListener('click', () => {
+      if (window.innerWidth >= 1024) {
+        // Desktop: collapse / expand the left bar (remembered).
+        const collapsed = document.body.classList.toggle('sidebar-collapsed');
+        try { localStorage.setItem('liyaa.sidebar', collapsed ? 'hidden' : 'shown'); } catch {}
+      } else {
+        // Mobile: toggle the slide-in drawer.
+        if ($('#sidebar').classList.contains('-translate-x-full')) openSidebar();
+        else closeSidebar();
+      }
+    });
     $('#backdrop').addEventListener('click', closeSidebar);
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
@@ -1561,6 +1571,12 @@
     load();
     bindEvents();
     syncFilterChips();
+
+    // Restore collapsed-sidebar preference (desktop).
+    try {
+      if (localStorage.getItem('liyaa.sidebar') === 'hidden') document.body.classList.add('sidebar-collapsed');
+    } catch {}
+
     switchScreen('dashboard');
     render();
 
