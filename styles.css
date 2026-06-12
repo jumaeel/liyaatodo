@@ -163,6 +163,25 @@ button, a, input, select, .project-item, .task-row {
 .add-task-btn:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 12px 22px -8px rgba(79, 80, 219, .6); }
 .add-task-btn:active { transform: translateY(0); }
 
+/* ---- Date inputs: brand accent + theme-aware native picker ---- */
+input[type="date"] {
+  accent-color: #5b6cf2;
+  color-scheme: light;
+  position: relative;
+}
+.dark input[type="date"] { color-scheme: dark; }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .5;
+  padding: 2px;
+  border-radius: 5px;
+  transition: opacity .2s, background .2s;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background: rgba(91,108,242,.12);
+}
+
 /* ---- Task row ---- */
 .task-row {
   position: relative;

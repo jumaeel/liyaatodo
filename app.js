@@ -288,6 +288,15 @@
   /* ---------- Date helpers ---------- */
   const todayStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
+  // ISO yyyy-mm-dd for a date that's `days` from today (default 7 = one week).
+  function defaultDeadline(days = 7) {
+    const d = todayStart();
+    d.setDate(d.getDate() + days);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+
   function isOverdue(task) {
     if (!task.deadline || task.isCompleted) return false;
     const due = new Date(task.deadline + 'T00:00:00');
@@ -1214,7 +1223,7 @@
         estimateMin: parseEstimate($('#taskEstimate').value),
       });
       $('#taskTitle').value = '';
-      $('#taskDeadline').value = '';
+      $('#taskDeadline').value = defaultDeadline();
       $('#taskEstimate').value = '';
       $('#newImportant').dataset.on = 'false';
       $('#newUrgent').dataset.on = 'false';
@@ -1368,6 +1377,9 @@
     syncFilterChips();
     switchScreen('dashboard');
     render();
+
+    // New tasks default to a deadline one week out.
+    $('#taskDeadline').value = defaultDeadline();
 
     // Connect to the cloud (Google sign-in + sync) if it's configured.
     initCloud();
