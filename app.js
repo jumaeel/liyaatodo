@@ -1304,6 +1304,10 @@
   function bindEvents() {
     // --- Nav ---
     $('#dashboardNav').addEventListener('click', () => { switchScreen('dashboard'); render(); });
+    $('#brandHome').addEventListener('click', () => { switchScreen('dashboard'); render(); });
+    $('#brandHome').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchScreen('dashboard'); render(); }
+    });
     $('#todayNav').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
     $('#guideNav').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
     $('#guideStartBtn').addEventListener('click', () => { switchScreen('dashboard'); render(); });
