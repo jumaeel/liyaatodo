@@ -324,16 +324,12 @@
     $('#todayNav').classList.toggle('is-active', name === 'today');
     $('#guideNav').classList.toggle('is-active', name === 'guide');
 
-    // Search only works while viewing a project.
-    const search = $('#searchInput');
-    if (search) {
-      const onProject = name === 'project';
-      search.disabled = !onProject;
-      search.placeholder = onProject ? 'Search tasks…' : 'Select a project to search…';
-      if (!onProject) {
-        search.value = '';
-        $$('.task-row').forEach((row) => row.style.opacity = '');
-      }
+    // Search bar only exists while viewing a project.
+    const onProject = name === 'project';
+    $('#searchWrap').classList.toggle('hidden', !onProject);
+    if (!onProject) {
+      $('#searchInput').value = '';
+      $$('.task-row').forEach((row) => row.style.opacity = '');
     }
     closeSidebar();
   }
