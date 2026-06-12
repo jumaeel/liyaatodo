@@ -30,8 +30,11 @@
    ============================================================ */
 
 window.firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  appId: "PASTE_APP_ID",
+  apiKey: "AIzaSyDv4jZoHzna90rcdMh79Ylq6ouZc7WuZ18",
+  authDomain: "liyaatodo.firebaseapp.com",
+  projectId: "liyaatodo",
+  storageBucket: "liyaatodo.firebasestorage.app",
+  messagingSenderId: "815348552827",
+  appId: "1:815348552827:web:aa2399b561baa7f5583ede",
+  measurementId: "G-SK15GEPGEZ",
 };
