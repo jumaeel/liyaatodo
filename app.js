@@ -244,7 +244,7 @@
     if (!el) return;
     if (s === 'saving')      { el.textContent = 'Saving…'; el.className = 'text-xs text-slate-400'; }
     else if (s === 'error')  { el.textContent = 'Save failed — will retry on next change'; el.className = 'text-xs text-red-500'; }
-    else                     { el.textContent = 'Synced ✓ — saved to your account'; el.className = 'text-xs text-emerald-600'; }
+    else                     { el.textContent = 'Synced ✓ — saved to your account'; el.className = 'text-xs text-indigo-600'; }
   }
 
   /* ---------- Date helpers ---------- */
@@ -281,8 +281,10 @@
     $('#dashboardScreen').classList.toggle('hidden', name !== 'dashboard');
     $('#todayScreen').classList.toggle('hidden', name !== 'today');
     $('#projectScreen').classList.toggle('hidden', name !== 'project');
+    $('#guideScreen').classList.toggle('hidden', name !== 'guide');
     $('#dashboardNav').classList.toggle('is-active', name === 'dashboard');
     $('#todayNav').classList.toggle('is-active', name === 'today');
+    $('#guideNav').classList.toggle('is-active', name === 'guide');
     closeSidebar();
   }
 
@@ -472,14 +474,14 @@
         const row = document.createElement('button');
         row.className = 'w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition group text-left';
         row.innerHTML = `
-          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 grid place-items-center shrink-0 font-bold text-sm">
+          <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 grid place-items-center shrink-0 font-bold text-sm">
             ${escapeHTML(proj.name.charAt(0).toUpperCase())}
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-slate-800 truncate text-sm">${escapeHTML(proj.name)}</p>
             <div class="flex items-center gap-2 mt-1">
               <div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:${p}%;"></div>
+                <div class="h-full rounded-full bg-indigo-500 transition-all duration-500" style="width:${p}%;"></div>
               </div>
               <span class="text-xs text-slate-400 shrink-0">${d}/${t}</span>
             </div>
@@ -564,7 +566,7 @@
     slotsEl.innerHTML = '';
     for (let i = 0; i < 5; i++) {
       const pip = document.createElement('div');
-      pip.className = `h-1.5 rounded-full transition-all duration-300 ${i < total ? 'bg-emerald-500' : 'bg-slate-100'}`;
+      pip.className = `h-1.5 rounded-full transition-all duration-300 ${i < total ? 'bg-indigo-500' : 'bg-slate-100'}`;
       slotsEl.appendChild(pip);
     }
   }
@@ -624,13 +626,13 @@
 
       tasks.forEach((task) => {
         const btn = document.createElement('button');
-        btn.className = 'w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition group';
+        btn.className = 'w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 transition group';
         btn.disabled = slotsLeft === 0;
         const prDot = task.priority === 'High' ? 'bg-red-400' : task.priority === 'Medium' ? 'bg-orange-400' : 'bg-slate-300';
         btn.innerHTML = `
           <span class="w-2 h-2 rounded-full shrink-0 ${prDot}"></span>
           <span class="flex-1 text-sm font-medium text-slate-700 truncate">${escapeHTML(task.title)}</span>
-          <span class="text-xs font-semibold text-emerald-600 opacity-0 group-hover:opacity-100 shrink-0 transition">Add →</span>`;
+          <span class="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 shrink-0 transition">Add →</span>`;
         btn.addEventListener('click', () => {
           if (state.todayTaskIds.length >= 5) { toast('Today is full — max 5 tasks'); return; }
           state.todayTaskIds.push(task.id);
@@ -1009,6 +1011,8 @@
     // --- Nav ---
     $('#dashboardNav').addEventListener('click', () => { switchScreen('dashboard'); render(); });
     $('#todayNav').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
+    $('#guideNav').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
+    $('#guideStartBtn').addEventListener('click', () => { switchScreen('dashboard'); render(); });
 
     // --- Dashboard quick buttons ---
     $('#dashNewProject').addEventListener('click', () => {

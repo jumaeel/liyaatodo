@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#047857" />
+  <meta name="theme-color" content="#5b6cf2" />
   <title>Liyaatodo · Daily Progress Dashboard</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="logo-mark.svg" type="image/svg+xml" />
@@ -37,15 +37,15 @@
              -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
 
       <!-- Brand -->
-      <div class="flex items-center gap-2.5 px-5 h-16 shrink-0">
-        <img src="logo-mark.svg" alt="Liyaatodo" class="w-10 h-10 shrink-0" />
+      <div class="flex items-center gap-3 px-4 h-20 shrink-0">
+        <img src="logo-mark.svg" alt="Liyaatodo" class="w-14 h-14 shrink-0" />
         <div class="leading-none">
-          <h1 class="font-extrabold text-xl tracking-tight">
-            <span class="text-slate-900">Liyaa</span><span style="color:#059669">todo</span>
+          <h1 class="font-extrabold text-2xl tracking-tight">
+            <span class="text-slate-900">Liyaa</span><span style="color:#5b6cf2">todo</span>
           </h1>
-          <svg class="mt-1 w-[96px]" viewBox="0 0 120 16" fill="none" aria-hidden="true">
+          <svg class="mt-1 w-[120px]" viewBox="0 0 120 16" fill="none" aria-hidden="true">
             <path d="M3 9c30 6 64 5 95-3" stroke="#f5a623" stroke-width="5" stroke-linecap="round"/>
-            <path d="M103 8l5 5 9-11" stroke="#059669" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M103 8l5 5 9-11" stroke="#5b6cf2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
       </div>
@@ -61,7 +61,11 @@
           <button id="todayNav" class="nav-item">
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             Today's Focus
-            <span id="todayBadge" class="ml-auto text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full hidden">0/5</span>
+            <span id="todayBadge" class="ml-auto text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full hidden">0/5</span>
+          </button>
+          <button id="guideNav" class="nav-item">
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            How to use
           </button>
         </div>
 
@@ -80,9 +84,9 @@
         <form id="addProjectForm" class="flex gap-2">
           <input id="newProjectInput" type="text" maxlength="30" placeholder="New project…"
             class="flex-1 min-w-0 px-3 py-2 text-sm rounded-xl2 border border-slate-200 bg-slate-50
-                   focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition" />
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
           <button type="submit"
-            class="shrink-0 w-9 h-9 rounded-xl2 bg-emerald-700 hover:bg-emerald-800 text-white grid place-items-center transition shadow-sm">
+            class="shrink-0 w-9 h-9 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white grid place-items-center transition shadow-sm">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
           </button>
         </form>
@@ -104,14 +108,14 @@
           <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input id="searchInput" type="search" placeholder="Search tasks…"
             class="w-full pl-10 pr-3 py-2.5 text-sm rounded-full bg-slate-100 border border-transparent
-                   focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition" />
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
         </label>
         <div class="ml-auto flex items-center gap-2.5">
           <button class="hidden sm:grid w-9 h-9 place-items-center rounded-full hover:bg-slate-100 text-slate-500 transition" title="Notifications">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
           </button>
           <button id="userBtn" class="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full hover:bg-slate-100 transition" title="Your profile">
-            <span id="userAvatar" class="w-9 h-9 grid place-items-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">?</span>
+            <span id="userAvatar" class="w-9 h-9 grid place-items-center rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm shrink-0">?</span>
             <span id="userName" class="hidden sm:block text-sm font-semibold text-slate-700 max-w-[120px] truncate">Set your name</span>
           </button>
         </div>
@@ -193,7 +197,7 @@
                   </div>
                 </div>
                 <div class="flex items-center justify-center gap-4 mt-4 text-xs text-slate-500">
-                  <span class="flex items-center gap-1.5"><i class="dot bg-emerald-500"></i>Done</span>
+                  <span class="flex items-center gap-1.5"><i class="dot bg-indigo-500"></i>Done</span>
                   <span class="flex items-center gap-1.5"><i class="dot bg-slate-200"></i>Remaining</span>
                 </div>
               </div>
@@ -264,8 +268,8 @@
               <div id="todayList" class="space-y-2.5 mt-1"></div>
 
               <div id="todayEmpty" class="text-center py-10">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 ring-1 ring-emerald-100 grid place-items-center mb-3">
-                  <svg class="w-7 h-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 ring-1 ring-indigo-100 grid place-items-center mb-3">
+                  <svg class="w-7 h-7 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 </div>
                 <p class="text-slate-600 font-semibold">No tasks selected yet</p>
                 <p class="text-sm text-slate-400 mt-1">Pick up to 5 tasks from any project to focus on today.</p>
@@ -327,13 +331,13 @@
               <form id="addTaskForm" class="space-y-3">
                 <input id="taskTitle" type="text" required maxlength="120" placeholder="What needs to be done?"
                   class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
-                         focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition" />
+                         focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
                 <div class="flex flex-col sm:flex-row gap-3">
                   <label class="flex-1">
                     <span class="block text-xs font-medium text-slate-400 mb-1">Priority</span>
                     <select id="taskPriority"
                       class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
-                             focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition">
+                             focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition">
                       <option value="High">🔴 High</option>
                       <option value="Medium" selected>🟠 Medium</option>
                       <option value="Low">⚪ Low</option>
@@ -343,7 +347,7 @@
                     <span class="block text-xs font-medium text-slate-400 mb-1">Deadline</span>
                     <input id="taskDeadline" type="date"
                       class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
-                             focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition" />
+                             focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
                   </label>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap pt-1">
@@ -385,11 +389,100 @@
 
             <!-- Empty state -->
             <div id="emptyState" class="hidden text-center py-16">
-              <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 ring-1 ring-emerald-100 grid place-items-center mb-4">
-                <svg class="w-8 h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 ring-1 ring-indigo-100 grid place-items-center mb-4">
+                <svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               </div>
               <p id="emptyStateText" class="text-slate-500 font-medium">No tasks yet</p>
               <p class="text-sm text-slate-400">Add your first task above to start tracking progress.</p>
+            </div>
+
+          </div>
+
+          <!-- ===================== HOW-TO / GUIDE SCREEN ===================== -->
+          <div id="guideScreen" class="hidden space-y-6">
+
+            <!-- Intro banner -->
+            <section class="vision-banner relative overflow-hidden rounded-2xl p-7 sm:p-9 text-white">
+              <div class="hero-glow"></div>
+              <div class="relative max-w-2xl">
+                <span class="inline-block text-xs font-semibold uppercase tracking-wider text-white/70 mb-3">Getting started</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight">How Liyaatodo works</h2>
+                <p class="mt-3 text-white/80 sm:text-lg">A quick walkthrough of every part of the app — follow the steps below and you'll be tracking real progress in a couple of minutes.</p>
+                <button id="guideStartBtn" class="banner-btn-light mt-5">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  Go to my dashboard
+                </button>
+              </div>
+            </section>
+
+            <!-- Steps -->
+            <div class="space-y-4">
+
+              <!-- Step 1 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">1</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Create a project</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">A <b>project</b> is a folder for related tasks — like <i>Studies</i>, <i>Work</i>, or <i>Errands</i>. Use the <b>“New project…”</b> box at the bottom of the left sidebar, type a name, and hit the <b>+</b> button. You can make as many as you like; switch between them by clicking their name.</p>
+                </div>
+              </div>
+
+              <!-- Step 2 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">2</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Add your tasks</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open a project and use the <b>Add task</b> form. Give it a title, pick a <b>priority</b> (High / Medium / Low), and optionally a <b>deadline</b>. You can also tag a task <b>★ Important</b> and <b>⚡ Urgent</b> — that powers the priority matrix in step 5. Tick the checkbox when it's done and your progress updates instantly.</p>
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">3</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Pick your “Today’s Focus”</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open <b>Today’s Focus</b> from the menu and choose <b>up to 5 tasks</b> you’ll finish today — pulled from <i>any</i> of your projects. Use the search box to find them fast. Tick one off here and it’s also completed in its original project. It's the daily shortlist that keeps you focused.</p>
+                </div>
+              </div>
+
+              <!-- Step 4 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">4</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Watch your progress</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">The <b>Dashboard</b> is your command centre: total / completed / active / overdue counts, an overall completion gauge, a bar for every project, and a priority breakdown. It updates live as you check tasks off — so you can see momentum building across everything at a glance.</p>
+                </div>
+              </div>
+
+              <!-- Step 5 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">5</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Prioritise with the Matrix</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Inside a project, switch from <b>List</b> to <b>Matrix</b> view to see the <b>Eisenhower Matrix</b>: four boxes — <b>Do</b> (important &amp; urgent), <b>Schedule</b>, <b>Delegate</b>, and <b>Delete</b>. <b>Drag a task</b> into a box to set its importance/urgency. It’s the fastest way to decide what actually deserves your attention.</p>
+                </div>
+              </div>
+
+              <!-- Step 6 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">6</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Sign in to save &amp; sync</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Tap your <b>avatar</b> (top-right) → <b>Account &amp; sync</b> → <b>Continue with Google</b>. Once signed in, everything saves to your account automatically and <b>syncs across all your devices</b> — finish a task on your phone and it’s updated on your laptop. Signed out, your data still saves in this browser.</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Tips -->
+            <div class="panel">
+              <div class="panel-head"><span class="panel-title">Handy to know</span></div>
+              <ul class="space-y-2.5 text-sm text-slate-600">
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Search</b> at the top of any page jumps to matching tasks.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Works <b>offline</b> — it’s installable as an app from your browser’s “Add to Home Screen / Install” option.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Overdue</b> tasks are flagged in red so nothing slips through.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Deleting a project removes its tasks too — you’ll be asked to confirm first.</span></li>
+              </ul>
             </div>
 
           </div>
@@ -415,8 +508,8 @@
         <button id="taskPickerClose" class="w-8 h-8 grid place-items-center rounded-lg hover:bg-slate-100 text-slate-400 text-lg font-bold leading-none transition shrink-0">&times;</button>
       </div>
       <!-- Remaining slots indicator -->
-      <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 shrink-0">
-        <p id="pickerSlotsLeft" class="text-xs font-semibold text-emerald-700">5 slots remaining</p>
+      <div class="px-4 py-2 bg-indigo-50 border-b border-indigo-100 shrink-0">
+        <p id="pickerSlotsLeft" class="text-xs font-semibold text-indigo-700">5 slots remaining</p>
       </div>
       <!-- Task list -->
       <div id="taskPickerList" class="overflow-y-auto flex-1 p-3 space-y-1"></div>
@@ -438,9 +531,9 @@
         <form id="userForm" class="mt-4 space-y-3">
           <input id="userNameInput" type="text" maxlength="40" placeholder="Your name…"
             class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
-                   focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition" />
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
           <button type="submit"
-            class="w-full py-3 rounded-xl2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold transition shadow-sm">
+            class="w-full py-3 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition shadow-sm">
             Save
           </button>
         </form>
@@ -473,10 +566,10 @@
           <!-- signed in -->
           <div id="authSignedIn" class="hidden">
             <div class="flex items-center gap-3">
-              <span id="authAvatar" class="w-10 h-10 grid place-items-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">?</span>
+              <span id="authAvatar" class="w-10 h-10 grid place-items-center rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm shrink-0">?</span>
               <div class="min-w-0 flex-1">
                 <p id="authEmail" class="text-sm font-semibold text-slate-800 truncate">Signed in</p>
-                <p id="authStatus" class="text-xs text-emerald-600">Synced ✓</p>
+                <p id="authStatus" class="text-xs text-indigo-600">Synced ✓</p>
               </div>
             </div>
             <button id="cloudSignOutBtn" type="button"
