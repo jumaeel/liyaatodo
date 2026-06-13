@@ -533,7 +533,7 @@
     QUADRANTS.forEach((q) => {
       const inQ = allTasks.filter((t) => inQuadrant(t, q));
       const active = inQ.filter((t) => !t.isCompleted);
-      const shown = active.slice(0, 4);
+      const shown = active.slice(0, 2);
       const more = active.length - shown.length;
       const rows = shown.map((t) => `
         <li class="mq-item" data-pid="${t.projectId}" title="Open ${escapeHTML(projName(t.projectId))}">

@@ -1,5 +1,5 @@
 /* Liyaatodo · service worker — network-first app shell, offline fallback */
-const CACHE = 'liyaatodo-v37';
+const CACHE = 'liyaatodo-v38';
 const ASSETS = [
   './',
   './index.html',
