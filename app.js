@@ -15,6 +15,7 @@
     activeProjectId: null,
     todayTaskIds: [],    // up to 5 task IDs selected for today
     user: { name: '' },  // the person using the app
+    customQuotes: [],    // user-added motivation quotes { text, source }
   };
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
@@ -96,6 +97,7 @@
         activeProjectId: parsed.activeProjectId ?? null,
         todayTaskIds: Array.isArray(parsed.todayTaskIds) ? parsed.todayTaskIds : [],
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
+        customQuotes: Array.isArray(parsed.customQuotes) ? parsed.customQuotes : [],
       };
     }
     normalizeState();
@@ -121,6 +123,8 @@
     // Clean up stale todayTaskIds.
     const taskIds = new Set(state.tasks.map((t) => t.id));
     state.todayTaskIds = state.todayTaskIds.filter((id) => taskIds.has(id));
+
+    if (!Array.isArray(state.customQuotes)) state.customQuotes = [];
   }
 
   function load() {
@@ -329,9 +333,11 @@
     $('#todayScreen').classList.toggle('hidden', name !== 'today');
     $('#projectScreen').classList.toggle('hidden', name !== 'project');
     $('#guideScreen').classList.toggle('hidden', name !== 'guide');
+    $('#settingsScreen').classList.toggle('hidden', name !== 'settings');
     $('#dashboardNav').classList.toggle('is-active', name === 'dashboard');
     $('#todayNav').classList.toggle('is-active', name === 'today');
     $('#guideNav').classList.toggle('is-active', name === 'guide');
+    $('#settingsNav').classList.toggle('is-active', name === 'settings');
 
     // Search bar only exists while viewing a project.
     const onProject = name === 'project';
@@ -353,6 +359,7 @@
     renderNotifs();
     if (screen === 'dashboard') renderDashboard();
     if (screen === 'today') renderToday();
+    if (screen === 'settings') renderSettings();
     if (screen === 'project') {
       renderHeader();
       renderProgress();
@@ -784,6 +791,112 @@
     if (on && screen !== 'today') { switchScreen('today'); renderToday(); renderSidebar(); }
   }
 
+  /* ============================================================
+     SETTINGS  (custom quotes · cache reset · erase data · install)
+     ============================================================ */
+  function renderSettings() {
+    const list = $('#customQuoteList');
+    if (!list) return;
+    const quotes = state.customQuotes || [];
+    if (quotes.length === 0) {
+      list.innerHTML = '<p class="text-sm text-slate-400 py-2">No custom quotes yet — add one above.</p>';
+    } else {
+      list.innerHTML = '';
+      quotes.forEach((q, i) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-3 p-3 rounded-xl bg-slate-50';
+        row.innerHTML = `
+          <span class="text-indigo-400 text-lg leading-none shrink-0">“</span>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm text-slate-700">${escapeHTML(q.text)}</p>
+            ${q.source ? `<p class="text-xs text-slate-400 mt-1">— ${escapeHTML(q.source)}</p>` : ''}
+          </div>
+          <button class="shrink-0 w-8 h-8 grid place-items-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition" data-del-quote="${i}" title="Remove" aria-label="Remove quote">
+            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          </button>`;
+        list.appendChild(row);
+      });
+    }
+    syncInstallBtn();
+  }
+
+  function addCustomQuote(e) {
+    e.preventDefault();
+    const text = $('#quoteInput').value.trim();
+    if (!text) return;
+    const source = $('#quoteAuthor').value.trim();
+    state.customQuotes.push({ text, source });
+    save();
+    $('#quoteInput').value = '';
+    $('#quoteAuthor').value = '';
+    renderSettings();
+    renderQuote();
+    toast('Quote added to your rotation');
+  }
+
+  function removeCustomQuote(i) {
+    if (i < 0 || i >= state.customQuotes.length) return;
+    state.customQuotes.splice(i, 1);
+    save();
+    renderSettings();
+    renderQuote();
+    toast('Quote removed');
+  }
+
+  function resetCache() {
+    if (!confirm('Clear the app cache and reload? Your tasks are kept.')) return;
+    const done = () => window.location.reload();
+    if ('caches' in window) {
+      caches.keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => navigator.serviceWorker?.getRegistrations?.() || [])
+        .then((regs) => Promise.all([...regs].map((r) => r.update().catch(() => {}))))
+        .finally(done);
+    } else { done(); }
+  }
+
+  function eraseAllData() {
+    if (!confirm('Erase ALL projects, tasks and settings on this device? This cannot be undone.')) return;
+    if (!confirm('Are you absolutely sure? Everything on this device will be deleted.')) return;
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('liyaa.notified');
+      localStorage.removeItem('liyaa.notifRead');
+    } catch {}
+    window.location.reload();
+  }
+
+  /* ---------- Install as an app (PWA) ---------- */
+  let deferredInstallPrompt = null;
+
+  function syncInstallBtn() {
+    const btn = $('#installAppBtn');
+    const hint = $('#installHint');
+    if (!btn) return;
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (standalone) {
+      btn.disabled = true; btn.textContent = 'Already installed ✓';
+      if (hint) hint.textContent = 'Liyaatodo is running as an installed app. 🎉';
+    } else if (deferredInstallPrompt) {
+      btn.disabled = false; btn.textContent = 'Install app';
+    } else {
+      btn.disabled = false; btn.textContent = 'How to install';
+    }
+  }
+
+  function installApp() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.finally(() => { deferredInstallPrompt = null; syncInstallBtn(); });
+    } else {
+      // No native prompt (e.g. iOS Safari / already dismissed) — show guidance.
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      toast(ios
+        ? 'On iPhone: tap Share → “Add to Home Screen”'
+        : 'Use your browser menu → “Install app” / “Add to Home Screen”');
+    }
+  }
+
   /* ---------- Rotating motivation quotes (Today's Focus) ---------- */
   const QUOTES = [
     { text: "And that there is not for man except that [good] for which he strives.", source: "Quran 53:39 🎯", note: "Your future isn't defined by what you wish for; it is defined by what you actively work for. 📈" },
@@ -819,10 +932,19 @@
   ];
   let quoteIdx = 0;
 
+  // Built-in quotes + the user's own custom quotes.
+  function allQuotes() {
+    const custom = (state.customQuotes || []).map((q) => ({
+      text: q.text, source: (q.source ? q.source + ' ' : '') + '✍️ Your quote', note: '',
+    }));
+    return QUOTES.concat(custom);
+  }
+
   function renderQuote() {
     const el = $('#quoteText');
     if (!el) return;
-    const q = QUOTES[quoteIdx % QUOTES.length];
+    const list = allQuotes();
+    const q = list[quoteIdx % list.length];
     el.textContent = `“${q.text}”`;
     $('#quoteSource').textContent = `— ${q.source}`;
     const noteEl = $('#quoteNote');
@@ -831,7 +953,7 @@
   }
 
   function rotateQuote() {
-    quoteIdx = (quoteIdx + 1) % QUOTES.length;
+    quoteIdx = (quoteIdx + 1) % allQuotes().length;
     renderQuote();
   }
 
@@ -1479,6 +1601,27 @@
     $('#todayNav').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
     $('#guideNav').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
     $('#guideStartBtn').addEventListener('click', () => { switchScreen('dashboard'); render(); });
+    $('#settingsNav').addEventListener('click', () => { switchScreen('settings'); renderSettings(); renderSidebar(); });
+
+    // --- Settings ---
+    $('#addQuoteForm').addEventListener('submit', addCustomQuote);
+    $('#customQuoteList').addEventListener('click', (e) => {
+      const del = e.target.closest('[data-del-quote]');
+      if (del) removeCustomQuote(parseInt(del.dataset.delQuote, 10));
+    });
+    $('#resetCacheBtn').addEventListener('click', resetCache);
+    $('#eraseDataBtn').addEventListener('click', eraseAllData);
+    $('#installAppBtn').addEventListener('click', installApp);
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      syncInstallBtn();
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      syncInstallBtn();
+      toast('🎉 Liyaatodo installed!');
+    });
 
     // --- Guide quick-tour cards ---
     $$('.guide-card').forEach((card) => {

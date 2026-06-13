@@ -80,6 +80,10 @@
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
             How to use
           </button>
+          <button id="settingsNav" class="nav-item">
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </button>
         </div>
 
         <!-- Projects -->
@@ -688,6 +692,67 @@
 
             </div>
 
+            <!-- Eisenhower Matrix explainer -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3 class="panel-title">Understanding the Eisenhower Matrix</h3>
+                <span class="text-xs text-slate-400">the heart of prioritising</span>
+              </div>
+              <p class="text-sm text-slate-500 leading-relaxed">
+                Named after US President Dwight D. Eisenhower, this method sorts every task by two simple questions:
+                <b>Is it important?</b> (does it move you toward your real goals?) and <b>Is it urgent?</b> (does it need attention right now?).
+                Crossing those two answers gives <b>four quadrants</b> — and each one tells you exactly what to do.
+                In Liyaatodo you set a task's <b>★ Important</b> and <b>⚡ Urgent</b> flags (or just drag it into a box in the project's <b>Matrix view</b>), and it lands in the right quadrant automatically.
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <!-- Do -->
+                <div class="rounded-xl border p-4" style="border-color:#cdeadd;background:#f0faf5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full" style="background:#22c55e"></span>
+                    <span class="font-extrabold text-slate-900">1 · Do</span>
+                    <span class="ml-auto text-xs font-semibold" style="color:#15803d">Important · Urgent</span>
+                  </div>
+                  <p class="text-sm text-slate-600 mt-2 leading-relaxed"><b>Do these first, today.</b> Crises and real deadlines — an assignment due tonight, a bill, something on fire. If it matters and the clock is ticking, it belongs here. Don't let this pile grow.</p>
+                  <p class="text-xs text-slate-400 mt-2 italic">e.g. “Submit the report due tonight”, “Fix the broken booking page”.</p>
+                </div>
+                <!-- Schedule -->
+                <div class="rounded-xl border p-4" style="border-color:#f6d6c4;background:#fdf4ef">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full" style="background:#f59e0b"></span>
+                    <span class="font-extrabold text-slate-900">2 · Schedule</span>
+                    <span class="ml-auto text-xs font-semibold" style="color:#c2620c">Important · Not urgent</span>
+                  </div>
+                  <p class="text-sm text-slate-600 mt-2 leading-relaxed"><b>Plan a time for these — this is where you grow.</b> No deadline pressure yet, but they build your future: studying, skills, health, relationships. Give them a deadline so they don't slip into quadrant 1 as emergencies.</p>
+                  <p class="text-xs text-slate-400 mt-2 italic">e.g. “Revise for next month's exam”, “Learn a new skill”, “Exercise”.</p>
+                </div>
+                <!-- Delegate -->
+                <div class="rounded-xl border p-4" style="border-color:#cfddf4;background:#eef3fc">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full" style="background:#3b82f6"></span>
+                    <span class="font-extrabold text-slate-900">3 · Delegate</span>
+                    <span class="ml-auto text-xs font-semibold" style="color:#2563eb">Urgent · Not important</span>
+                  </div>
+                  <p class="text-sm text-slate-600 mt-2 leading-relaxed"><b>Delegate it, or knock it out fast.</b> It feels pressing but doesn't really move <i>your</i> goals — interruptions, some emails and calls, busywork. Hand it off if you can, or batch it quickly so it doesn't eat your day.</p>
+                  <p class="text-xs text-slate-400 mt-2 italic">e.g. “Reply to a routine email”, “Forward a request to the right person”.</p>
+                </div>
+                <!-- Delete -->
+                <div class="rounded-xl border p-4" style="border-color:#f5cccc;background:#fdf0f0">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full" style="background:#ef4444"></span>
+                    <span class="font-extrabold text-slate-900">4 · Delete</span>
+                    <span class="ml-auto text-xs font-semibold" style="color:#dc2626">Not important · Not urgent</span>
+                  </div>
+                  <p class="text-sm text-slate-600 mt-2 leading-relaxed"><b>Drop or defer these.</b> Distractions and time-wasters that neither matter nor are urgent. Be honest — deleting them is what frees your time for quadrants 1 and 2.</p>
+                  <p class="text-xs text-slate-400 mt-2 italic">e.g. “Mindless scrolling”, “Tasks that no longer serve a goal”.</p>
+                </div>
+              </div>
+
+              <div class="mt-4 p-3 rounded-xl bg-indigo-50 text-sm text-indigo-900/80 leading-relaxed">
+                <b>The goal:</b> spend most of your time in <b>quadrant 2 (Schedule)</b>. People who plan important work <i>before</i> it becomes urgent stay calm and in control; people who live in quadrant 1 are always firefighting. Liyaatodo's deadlines, reminders and the dashboard matrix are built to keep you ahead.
+              </div>
+            </div>
+
             <!-- Tips -->
             <div class="panel">
               <div class="panel-head"><span class="panel-title">Handy to know</span></div>
@@ -714,6 +779,72 @@
                 Send feedback on Telegram
               </a>
             </div>
+
+          </div>
+
+          <!-- ===================== SETTINGS SCREEN ===================== -->
+          <div id="settingsScreen" class="hidden space-y-5">
+
+            <div>
+              <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Settings</h2>
+              <p class="text-slate-500 mt-1">Manage your app, quotes and saved data.</p>
+            </div>
+
+            <!-- Install app (PWA) -->
+            <section class="panel flex flex-col sm:flex-row sm:items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 grid place-items-center shrink-0">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-extrabold text-slate-900">Install Liyaatodo as an app</h3>
+                <p id="installHint" class="text-sm text-slate-500 mt-0.5">Add it to your home screen / desktop for a full-screen, offline app experience.</p>
+              </div>
+              <button id="installAppBtn" class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold transition shadow-sm">
+                Install app
+              </button>
+            </section>
+
+            <!-- Custom quotes -->
+            <section class="panel">
+              <div class="panel-head">
+                <h3 class="panel-title">Your motivation quotes</h3>
+                <span class="text-xs text-slate-400">shown in Today's Focus</span>
+              </div>
+              <p class="text-sm text-slate-500 mb-3">Add your own quotes to the rotation. They sync with your account and appear alongside the built-in ones.</p>
+              <form id="addQuoteForm" class="space-y-2.5">
+                <textarea id="quoteInput" rows="2" maxlength="280" placeholder="Write a quote that motivates you…"
+                  class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
+                         focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition resize-none"></textarea>
+                <div class="flex gap-2.5">
+                  <input id="quoteAuthor" type="text" maxlength="40" placeholder="Source / author (optional)"
+                    class="flex-1 min-w-0 px-4 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                           focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+                  <button type="submit" class="shrink-0 px-5 py-2.5 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold text-sm transition shadow-sm">Add</button>
+                </div>
+              </form>
+              <div id="customQuoteList" class="mt-4 space-y-2"></div>
+            </section>
+
+            <!-- Data & cache -->
+            <section class="panel">
+              <div class="panel-head"><h3 class="panel-title">Data &amp; cache</h3></div>
+              <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl bg-slate-50">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-800">Reset app cache</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Clears stored app files and reloads the latest version. Your tasks are kept.</p>
+                  </div>
+                  <button id="resetCacheBtn" class="shrink-0 px-4 py-2.5 rounded-xl2 border border-slate-200 hover:bg-white text-sm font-semibold text-slate-700 transition">Clear cache &amp; reload</button>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl bg-red-50">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-700">Erase all local data</p>
+                    <p class="text-xs text-red-500/80 mt-0.5">Deletes all projects, tasks and settings on this device. If you're signed in, your cloud copy stays unless you change it after.</p>
+                  </div>
+                  <button id="eraseDataBtn" class="shrink-0 px-4 py-2.5 rounded-xl2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition">Erase everything</button>
+                </div>
+              </div>
+            </section>
 
           </div>
 
