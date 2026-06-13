@@ -790,6 +790,8 @@
               <p class="text-slate-500 mt-1">Manage your app, quotes and saved data.</p>
             </div>
 
+            <p class="settings-label">App</p>
+
             <!-- Install app (PWA) -->
             <section class="panel flex flex-col sm:flex-row sm:items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 grid place-items-center shrink-0">
@@ -804,16 +806,12 @@
               </button>
             </section>
 
-            <!-- Custom quotes -->
+            <p class="settings-label">Quotes management</p>
+
+            <!-- Add a quote -->
             <section class="panel">
-              <div class="panel-head">
-                <h3 class="panel-title">Motivation quotes</h3>
-                <div class="flex items-center gap-2.5">
-                  <span id="quoteCount" class="text-xs text-slate-400"></span>
-                  <button id="restoreQuotesBtn" class="hidden text-xs font-bold text-indigo-600 hover:text-indigo-700 transition">Restore defaults</button>
-                </div>
-              </div>
-              <p class="text-sm text-slate-500 mb-3">These show on Today's Focus. Add your own (they sync to your account), and remove any below — built-in or yours.</p>
+              <div class="panel-head"><h3 class="panel-title">Add a quote</h3></div>
+              <p class="text-sm text-slate-500 mb-3">Your quotes show on Today's Focus alongside the built-in ones, and sync to your account.</p>
               <form id="addQuoteForm" class="space-y-2.5">
                 <textarea id="quoteInput" rows="2" maxlength="280" placeholder="Write a quote that motivates you…"
                   class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
@@ -825,8 +823,22 @@
                   <button type="submit" class="shrink-0 px-5 py-2.5 rounded-xl2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold text-sm transition shadow-sm">Add</button>
                 </div>
               </form>
-              <div id="customQuoteList" class="mt-4 space-y-2"></div>
             </section>
+
+            <!-- Quote library -->
+            <section class="panel">
+              <div class="panel-head">
+                <h3 class="panel-title">Your quote library</h3>
+                <div class="flex items-center gap-2.5">
+                  <span id="quoteCount" class="text-xs text-slate-400"></span>
+                  <button id="restoreQuotesBtn" class="hidden text-xs font-bold text-indigo-600 hover:text-indigo-700 transition">Restore defaults</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-500 mb-3">Every quote in your rotation — remove any, built-in or yours.</p>
+              <div id="customQuoteList" class="space-y-2 max-h-96 overflow-y-auto pr-1"></div>
+            </section>
+
+            <p class="settings-label">Data &amp; storage</p>
 
             <!-- Data & cache -->
             <section class="panel">

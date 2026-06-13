@@ -679,6 +679,17 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 }
 .today-slot:hover { border-color: #c2c8fa; color: #5b6cf2; background: #eef0fe; }
 
+/* Settings section labels */
+.settings-label {
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: #94a3b8;
+  padding: .25rem .25rem 0;
+  margin-top: .5rem;
+}
+.settings-label:first-of-type { margin-top: 0; }
+.dark .settings-label { color: #64748b; }
+
 /* ===== Today's Focus · rotating quote ===== */
 .quote-card {
   background: linear-gradient(135deg, #eef0fe 0%, #f6f3ff 100%);
