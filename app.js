@@ -1654,20 +1654,35 @@
     toast(`Project "${name}" created`);
   }
 
+  let pendingDeleteProjectId = null;
+
+  // Ask first (in-app modal — native confirm() is unreliable in PWAs).
   function deleteProject(id) {
-    if (state.projects.length <= 1) return;
+    if (state.projects.length <= 1) { toast("You can't delete your only project"); return; }
     const proj = state.projects.find((p) => p.id === id);
     if (!proj) return;
+    pendingDeleteProjectId = id;
     const taskCount = tasksFor(id).length;
-    const msg = taskCount > 0
-      ? `Delete "${proj.name}" and its ${taskCount} task${taskCount === 1 ? '' : 's'}?`
-      : `Delete project "${proj.name}"?`;
-    if (!confirm(msg)) return;
+    $('#deleteProjectMsg').textContent = taskCount > 0
+      ? `Delete “${proj.name}” and its ${taskCount} task${taskCount === 1 ? '' : 's'}? This can't be undone.`
+      : `Delete the project “${proj.name}”? This can't be undone.`;
+    $('#deleteProjectModal').classList.remove('hidden');
+  }
 
-    // Remove today task ids that belonged to this project
+  function closeDeleteProject() {
+    $('#deleteProjectModal').classList.add('hidden');
+    pendingDeleteProjectId = null;
+  }
+
+  function confirmDeleteProject() {
+    const id = pendingDeleteProjectId;
+    closeDeleteProject();
+    if (!id || state.projects.length <= 1) return;
+    const proj = state.projects.find((p) => p.id === id);
+    if (!proj) return;
+
     const taskIds = new Set(tasksFor(id).map((t) => t.id));
     state.todayTaskIds = state.todayTaskIds.filter((tid) => !taskIds.has(tid));
-
     state.projects = state.projects.filter((p) => p.id !== id);
     state.tasks = state.tasks.filter((t) => t.projectId !== id);
     if (state.activeProjectId === id) state.activeProjectId = state.projects[0].id;
@@ -2122,7 +2137,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); closeChangelog(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); closeChangelog(); closeDeleteProject(); }
     });
 
     // --- Drag & drop ---
@@ -2206,6 +2221,11 @@
     $('#editTaskForm').addEventListener('submit', saveEditTask);
     $('#editTaskClose').addEventListener('click', closeEditTask);
     $('#editTaskOverlay').addEventListener('click', closeEditTask);
+
+    // --- Delete project (in-app confirm) ---
+    $('#deleteProjectConfirm').addEventListener('click', confirmDeleteProject);
+    $('#deleteProjectCancel').addEventListener('click', closeDeleteProject);
+    $('#deleteProjectOverlay').addEventListener('click', closeDeleteProject);
 
     // --- Rename project ---
     $('#renameProjectBtn').addEventListener('click', () => {

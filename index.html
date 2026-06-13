@@ -1115,6 +1115,24 @@
     </div>
   </div>
 
+  <!-- Delete Project Modal -->
+  <div id="deleteProjectModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div id="deleteProjectOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    <div class="relative h-full grid place-items-center p-4">
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 grid place-items-center mb-3">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900">Delete project</h3>
+        <p id="deleteProjectMsg" class="text-sm text-slate-500 mt-1 leading-relaxed"></p>
+        <div class="flex gap-2.5 mt-5">
+          <button id="deleteProjectCancel" class="flex-1 py-2.5 rounded-xl2 border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-600 transition">Cancel</button>
+          <button id="deleteProjectConfirm" class="flex-1 py-2.5 rounded-xl2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Edit Task Modal -->
   <div id="editTaskModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
     <div id="editTaskOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
