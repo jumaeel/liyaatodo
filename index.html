@@ -11,40 +11,36 @@
   <!-- Tailwind CSS (CDN, configured below) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // ── Ink & Amber design system ──
-    // Remap slate→warm taupe/ink and indigo→deep teal so every existing
-    // utility class re-skins to the editorial palette. Amber is layered in via CSS.
+    // ── Theming engine ──
+    // slate/indigo utilities are wired to CSS-variable channel triplets
+    // (--tw-*), and the font families to --font-*, so every utility class
+    // re-skins instantly when the `data-theme` skin (or `.dark` mode) changes.
+    // The actual colour values for each skin live in styles.css.
+    var _ramp = function (prefix) {
+      var o = {}; [50,100,200,300,400,500,600,700,800,900].forEach(function (n) {
+        o[n] = 'rgb(var(--tw-' + prefix + '-' + n + ') / <alpha-value>)';
+      }); return o;
+    };
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Hanken Grotesk', 'Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
-            display: ['Fraunces', 'Georgia', 'Times New Roman', 'serif'],
+            sans: ['var(--font-sans)'],
+            display: ['var(--font-display)'],
           },
           borderRadius: { xl2: '12px' },
-          colors: {
-            // warm taupe → ink (was cool slate)
-            slate: {
-              50: '#f6f1e6', 100: '#efe8da', 200: '#e4dccb', 300: '#d3cab6',
-              400: '#a39c8d', 500: '#7c7568', 600: '#5f594e', 700: '#45413a',
-              800: '#2e2b25', 900: '#1c1a17',
-            },
-            // deep teal — the primary interactive colour (was indigo blue)
-            indigo: {
-              50: '#e6f2f0', 100: '#cfe6e2', 200: '#a8d4ce', 300: '#7bbcb3',
-              400: '#3f9c91', 500: '#1f7d72', 600: '#15665d', 700: '#0f5e57',
-              800: '#0c4a45', 900: '#0a3b37',
-            },
-          },
+          colors: { slate: _ramp('slate'), indigo: _ramp('indigo') },
         },
       },
     };
   </script>
-  <!-- Apply saved theme before paint to avoid a flash -->
+  <!-- Apply saved skin + mode before paint to avoid a flash -->
   <script>
     (function () {
       try {
+        var sk = localStorage.getItem('liyaa.skin');
+        document.documentElement.setAttribute('data-theme', sk === 'blue' ? 'blue' : 'amber');
         var t = localStorage.getItem('liyaa.theme');
         if (t === 'dark' || (!t && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
@@ -55,7 +51,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -71,14 +67,31 @@
       <!-- Brand -->
       <div id="brandHome" role="button" tabindex="0" title="Go to dashboard"
         class="flex items-center gap-3 px-4 h-20 shrink-0 cursor-pointer rounded-xl hover:bg-slate-50 transition">
-        <img src="logo-mark.svg" alt="Liyaatodo" class="w-14 h-14 shrink-0" />
+        <svg class="w-14 h-14 shrink-0" viewBox="0 0 120 120" aria-label="Liyaatodo" role="img">
+          <defs>
+            <linearGradient id="logoPad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fdfaf2"/><stop offset="100%" stop-color="#f1e8d6"/></linearGradient>
+            <linearGradient id="logoPencil" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fbc55f"/><stop offset="100%" stop-color="#f3a429"/></linearGradient>
+          </defs>
+          <rect class="lg-edge" x="16" y="26" width="84" height="86" rx="22"/>
+          <rect x="14" y="18" width="84" height="86" rx="22" fill="url(#logoPad)"/>
+          <g fill="none" stroke-linecap="round">
+            <path d="M31 30v9" stroke="#ddd2bb" stroke-width="7"/><path d="M53 30v9" stroke="#ddd2bb" stroke-width="7"/><path d="M75 30v9" stroke="#ddd2bb" stroke-width="7"/>
+            <path d="M23 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/><path d="M45 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/><path d="M67 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/>
+          </g>
+          <rect class="lg-check" x="24" y="44" width="16" height="16" rx="5"/><path d="M28 52l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="48" width="30" height="7" rx="3.5" fill="#dccfb6"/>
+          <rect class="lg-check" x="24" y="66" width="16" height="16" rx="5"/><path d="M28 74l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="70" width="26" height="7" rx="3.5" fill="#dccfb6"/>
+          <rect class="lg-check" x="24" y="88" width="16" height="16" rx="5"/><path d="M28 96l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="92" width="20" height="7" rx="3.5" fill="#dccfb6"/>
+          <g transform="rotate(45 86 40)">
+            <rect x="77" y="12" width="18" height="15" rx="5" fill="#f4517d"/><rect x="77" y="27" width="18" height="6" fill="#fffaf0"/><rect x="77" y="33" width="18" height="46" fill="url(#logoPencil)"/><rect x="83.5" y="33" width="5" height="46" fill="#fdd98f"/><path d="M77 79h18l-9 17z" fill="#f0d6a3"/><path d="M82.5 90l3.5-6.5 3.5 6.5-3.5 6z" fill="#2b2f45"/>
+          </g>
+        </svg>
         <div class="leading-none">
           <h1 class="font-display font-black text-2xl tracking-tight">
-            <span class="text-slate-900">Liyaa</span><span style="color:#c47512">todo</span>
+            <span class="text-slate-900">Liyaa</span><span class="wordmark">todo</span>
           </h1>
           <svg class="mt-1 w-[120px]" viewBox="0 0 120 16" fill="none" aria-hidden="true">
-            <path d="M3 9c30 6 64 5 95-3" stroke="#e0922a" stroke-width="5" stroke-linecap="round"/>
-            <path d="M103 8l5 5 9-11" stroke="#0f5e57" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="sw-accent" d="M3 9c30 6 64 5 95-3" stroke-width="5" stroke-linecap="round"/>
+            <path class="sw-primary" d="M103 8l5 5 9-11" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
       </div>
@@ -199,7 +212,7 @@
               <div class="relative p-7 sm:p-9 max-w-2xl">
                 <span id="bannerEyebrow" class="vb-eyebrow">Your productivity, organized</span>
                 <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight vb-title">
-                  Turn daily chaos into <span class="vb-accent">clear progress<svg class="vb-swoosh" viewBox="0 0 220 22" fill="none" aria-hidden="true"><path d="M4 13c56 9 118 8 178-5" stroke="#e0922a" stroke-width="7" stroke-linecap="round"/><path d="M188 12l9 8 16-19" stroke="#0f5e57" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  Turn daily chaos into <span class="vb-accent">clear progress<svg class="vb-swoosh" viewBox="0 0 220 22" fill="none" aria-hidden="true"><path class="sw-accent" d="M4 13c56 9 118 8 178-5" stroke-width="7" stroke-linecap="round"/><path class="sw-primary" d="M188 12l9 8 16-19" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </h2>
                 <p class="mt-4 vb-sub sm:text-lg">Liyaatodo helps you capture every task, prioritize what truly matters with the Eisenhower method, and watch real progress build across all your projects — one focused day at a time.</p>
                 <div class="mt-6 flex flex-wrap gap-3">
@@ -251,10 +264,10 @@
                   <svg viewBox="0 0 200 116" class="w-full max-w-[240px] mx-auto block">
                     <defs>
                       <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#f0a23a"/><stop offset="100%" stop-color="#0f5e57"/>
+                        <stop class="gs-a" offset="0%"/><stop class="gs-b" offset="100%"/>
                       </linearGradient>
                     </defs>
-                    <path d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke="#e7dfcd" stroke-width="18" stroke-linecap="round"/>
+                    <path class="gauge-track" d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke-width="18" stroke-linecap="round"/>
                     <path id="gaugeFill" d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round"
                       pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);"/>
                   </svg>
@@ -859,8 +872,28 @@
 
             <div>
               <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Settings</h2>
-              <p class="text-slate-500 mt-1">Manage your app, quotes and saved data.</p>
+              <p class="text-slate-500 mt-1">Manage your appearance, app, quotes and saved data.</p>
             </div>
+
+            <p class="settings-label">Appearance</p>
+
+            <!-- Theme picker -->
+            <section class="panel">
+              <div class="panel-head"><h3 class="panel-title">Theme</h3></div>
+              <p class="text-sm text-slate-500 mb-3">Pick the look that suits you. Use the ☀️ / 🌙 button in the top bar to switch light and dark.</p>
+              <div id="themePicker" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button type="button" class="theme-card" data-skin="amber">
+                  <span class="theme-swatch"><span style="background:#f4efe3"></span><span style="background:#0f5e57"></span><span style="background:#d8821f"></span><span style="background:#1c1a17"></span></span>
+                  <p class="theme-name">Ink &amp; Amber</p>
+                  <p class="theme-desc">Warm editorial · serif headings · paper texture</p>
+                </button>
+                <button type="button" class="theme-card" data-skin="blue">
+                  <span class="theme-swatch"><span style="background:#f5f6fb"></span><span style="background:#5b6cf2"></span><span style="background:#f5a623"></span><span style="background:#0f172a"></span></span>
+                  <p class="theme-name">Periwinkle</p>
+                  <p class="theme-desc">Cool &amp; clean · the original look</p>
+                </button>
+              </div>
+            </section>
 
             <p class="settings-label">App</p>
 

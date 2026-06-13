@@ -837,6 +837,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '2.7', type: 'feature',     title: 'Themes: Ink & Amber + Periwinkle', desc: 'Choose your look in Settings → Appearance — the warm “Ink & Amber” editorial theme or the original cool “Periwinkle”. Both work in light and dark mode.' },
     { v: '2.6', type: 'feature',     title: 'Sort your task list',            desc: 'Sort a project’s tasks by priority, deadline, estimated time, name, or newest.' },
     { v: '2.5', type: 'feature',     title: 'Backup & restore',               desc: 'Export all your data to a file and import it back anytime — perfect for moving devices or keeping a safe copy.' },
     { v: '2.4', type: 'fix',         title: 'Erase options fixed',            desc: 'The “what to erase” choices now use an in-app confirm, so they work reliably everywhere — including the installed app.' },
@@ -927,6 +928,7 @@
       });
     }
     syncInstallBtn();
+    syncThemeCards();
   }
 
   function addCustomQuote(e) {
@@ -2254,6 +2256,36 @@
       try { localStorage.setItem('liyaa.theme', isDark ? 'dark' : 'light'); } catch {}
       toast(isDark ? '🌙 Dark mode on' : '☀️ Light mode on');
     });
+
+    // --- Theme (skin) picker ---
+    const picker = $('#themePicker');
+    if (picker) {
+      picker.addEventListener('click', (e) => {
+        const card = e.target.closest('[data-skin]');
+        if (card) setSkin(card.dataset.skin);
+      });
+    }
+  }
+
+  const SKIN_META = { amber: '#0f5e57', blue: '#5b6cf2' };
+  function currentSkin() {
+    return document.documentElement.getAttribute('data-theme') === 'blue' ? 'blue' : 'amber';
+  }
+  function applySkinMeta(skin) {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', SKIN_META[skin] || SKIN_META.amber);
+  }
+  function syncThemeCards() {
+    const skin = currentSkin();
+    $$('#themePicker [data-skin]').forEach((c) => c.classList.toggle('is-active', c.dataset.skin === skin));
+  }
+  function setSkin(skin) {
+    if (skin !== 'amber' && skin !== 'blue') skin = 'amber';
+    document.documentElement.setAttribute('data-theme', skin);
+    try { localStorage.setItem('liyaa.skin', skin); } catch {}
+    applySkinMeta(skin);
+    syncThemeCards();
+    toast(skin === 'blue' ? '🎨 Periwinkle theme' : '🎨 Ink & Amber theme');
   }
 
   function syncFilterChips() {
@@ -2288,6 +2320,7 @@
     load();
     bindEvents();
     syncFilterChips();
+    applySkinMeta(currentSkin());
 
     // Restore collapsed-sidebar preference (desktop).
     try {
