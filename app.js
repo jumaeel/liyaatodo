@@ -299,7 +299,7 @@
       out.classList.add('hidden');
       inn.classList.remove('hidden');
       $('#authEmail').textContent = Cloud.user.email || Cloud.user.displayName || 'Signed in';
-      $('#authAvatar').textContent = userInitials(Cloud.user.displayName || Cloud.user.email || '?');
+      paintAvatar($('#authAvatar'), 'w-10 h-10');
       setSyncStatus('saved');
     } else {
       out.classList.remove('hidden');
@@ -400,9 +400,22 @@
     return parts.slice(0, 2).map((w) => w[0].toUpperCase()).join('');
   }
 
+  // Render an avatar element: Google photo if available, else initials.
+  function paintAvatar(el, sizeClass) {
+    const photo = Cloud.user && Cloud.user.photoURL;
+    const name = (state.user.name || (Cloud.user && Cloud.user.displayName) || '').trim();
+    if (photo) {
+      el.innerHTML = `<img src="${photo}" alt="" class="${sizeClass} rounded-full object-cover" referrerpolicy="no-referrer" />`;
+      el.classList.add('overflow-hidden', 'p-0');
+    } else {
+      el.textContent = name ? userInitials(name) : '?';
+      el.classList.remove('overflow-hidden', 'p-0');
+    }
+  }
+
   function renderUser() {
     const name = state.user.name.trim();
-    $('#userAvatar').textContent = name ? userInitials(name) : '?';
+    paintAvatar($('#userAvatar'), 'w-9 h-9');
     $('#userName').textContent = name || 'Set your name';
     const eyebrow = $('#bannerEyebrow');
     if (eyebrow) {
