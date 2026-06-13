@@ -20,6 +20,7 @@
   };
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
+  let sortBy = 'priority'; // priority | deadline | estimate | title | newest
   let screen = 'dashboard'; // dashboard | today | project
 
   /* ---------- Utilities ---------- */
@@ -1355,6 +1356,7 @@
     $('#emptyState').classList.toggle('hidden', isMatrix);
     $('#matrixView').classList.toggle('hidden', !isMatrix);
     $('#filterChips').classList.toggle('invisible', isMatrix);
+    $('#sortWrap').classList.toggle('invisible', isMatrix);
     if (isMatrix) renderMatrix();
     else renderTasks();
   }
@@ -1368,12 +1370,19 @@
     else if (filter === 'done') tasks = tasks.filter((t) => t.isCompleted);
 
     const prRank = { High: 0, Medium: 1, Low: 2 };
+    const pos = new Map(state.tasks.map((t, i) => [t.id, i]));
+    const byDeadline = (a, b) => (a.deadline || '9999-12-31').localeCompare(b.deadline || '9999-12-31');
+    const cmp = {
+      priority: (a, b) => (prRank[a.priority] - prRank[b.priority]) || byDeadline(a, b),
+      deadline: (a, b) => byDeadline(a, b) || (prRank[a.priority] - prRank[b.priority]),
+      estimate: (a, b) => ((b.estimateMin || 0) - (a.estimateMin || 0)) || (prRank[a.priority] - prRank[b.priority]),
+      title:    (a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
+      newest:   (a, b) => pos.get(b.id) - pos.get(a.id),
+    };
+    const sorter = cmp[sortBy] || cmp.priority;
     tasks = [...tasks].sort((a, b) => {
-      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
-      if (prRank[a.priority] !== prRank[b.priority]) return prRank[a.priority] - prRank[b.priority];
-      const da = a.deadline || '9999-12-31';
-      const db = b.deadline || '9999-12-31';
-      return da.localeCompare(db);
+      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1; // done always last
+      return sorter(a, b);
     });
 
     listEl.innerHTML = '';
@@ -1937,6 +1946,12 @@
         $$('.seg-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.view === view));
         renderView();
       });
+    });
+
+    // --- Sort ---
+    $('#sortSelect').addEventListener('change', (e) => {
+      sortBy = e.target.value;
+      renderTasks();
     });
 
     // --- Filters ---

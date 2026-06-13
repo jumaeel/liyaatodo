@@ -473,10 +473,25 @@
                   Matrix
                 </button>
               </div>
-              <div id="filterChips" class="flex items-center gap-2 flex-wrap">
-                <button data-filter="all"    class="filter-chip is-active">All</button>
-                <button data-filter="active" class="filter-chip">Active</button>
-                <button data-filter="done"   class="filter-chip">Completed</button>
+              <div class="flex items-center gap-2 flex-wrap">
+                <label id="sortWrap" class="relative inline-flex items-center">
+                  <svg class="w-4 h-4 absolute left-3 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12M3 12h9M3 18h6M17 8l4-4 4 4M21 4v16"/></svg>
+                  <select id="sortSelect"
+                    class="appearance-none pl-9 pr-8 py-1.5 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-600
+                           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition cursor-pointer">
+                    <option value="priority">Sort: Priority</option>
+                    <option value="deadline">Sort: Deadline</option>
+                    <option value="estimate">Sort: Est. time</option>
+                    <option value="title">Sort: Name (A–Z)</option>
+                    <option value="newest">Sort: Newest</option>
+                  </select>
+                  <svg class="w-4 h-4 absolute right-2.5 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </label>
+                <div id="filterChips" class="flex items-center gap-2 flex-wrap">
+                  <button data-filter="all"    class="filter-chip is-active">All</button>
+                  <button data-filter="active" class="filter-chip">Active</button>
+                  <button data-filter="done"   class="filter-chip">Completed</button>
+                </div>
               </div>
             </div>
 
