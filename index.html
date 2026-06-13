@@ -446,7 +446,14 @@
                       class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
                              focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
                   </label>
+                  <label class="flex-1">
+                    <span class="block text-xs font-medium text-slate-400 mb-1">Label</span>
+                    <input id="taskLabel" type="text" list="labelOptions" maxlength="24" placeholder="e.g. errand, study"
+                      class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                             focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+                  </label>
                 </div>
+                <datalist id="labelOptions"></datalist>
                 <div class="flex items-center gap-2 flex-wrap pt-1">
                   <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
                   <button type="button" id="newImportant" data-on="false" class="tag-toggle">★ Important</button>
@@ -491,6 +498,15 @@
                   <button data-filter="done"   class="filter-chip">Completed</button>
                 </div>
               </div>
+            </div>
+
+            <!-- Active label filter -->
+            <div id="labelFilterBar" class="hidden flex items-center gap-2 text-sm">
+              <span class="text-slate-500">Showing label:</span>
+              <button id="labelFilterClear" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-xs hover:bg-indigo-200 transition">
+                <span id="labelFilterName"></span>
+                <span class="text-indigo-400 text-sm leading-none">&times;</span>
+              </button>
             </div>
 
             <!-- Task list (List view) -->
@@ -1116,6 +1132,12 @@
                        focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
             </label>
           </div>
+          <label class="block">
+            <span class="block text-xs font-medium text-slate-400 mb-1">Label</span>
+            <input id="editTaskLabel" type="text" list="labelOptions" maxlength="24" placeholder="e.g. errand, study"
+              class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                     focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+          </label>
           <div class="flex items-center gap-2 flex-wrap pt-1">
             <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
             <button type="button" id="editImportant" data-on="false" class="tag-toggle">★ Important</button>

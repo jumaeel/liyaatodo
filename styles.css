@@ -291,6 +291,26 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .due { font-size: 0.75rem; color: #64748b; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .due.overdue { color: #dc2626; font-weight: 700; }
 
+/* Task label chips (clickable, 8 stable colours) */
+.task-label {
+  font-size: .68rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 999px;
+  white-space: nowrap; cursor: pointer;
+  border: none; line-height: 1.4;
+  transition: filter .15s ease;
+}
+.task-label::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.task-label:hover { filter: brightness(.95); }
+.lbl-0 { background: #eef0fe; color: #4750db; } .dark .lbl-0 { background: rgba(91,108,242,.22); color: #a5b0f7; }
+.lbl-1 { background: #e7f8ef; color: #0f9d6b; } .dark .lbl-1 { background: rgba(16,185,129,.20); color: #5eead4; }
+.lbl-2 { background: #fdf0e6; color: #c2620c; } .dark .lbl-2 { background: rgba(245,158,11,.20); color: #fbbf24; }
+.lbl-3 { background: #fdeaf0; color: #db2777; } .dark .lbl-3 { background: rgba(236,72,153,.20); color: #f9a8d4; }
+.lbl-4 { background: #e7f3fd; color: #1d72d8; } .dark .lbl-4 { background: rgba(59,130,246,.20); color: #93c5fd; }
+.lbl-5 { background: #f2ecfd; color: #7c3aed; } .dark .lbl-5 { background: rgba(168,85,247,.22); color: #d8b4fe; }
+.lbl-6 { background: #e4f7f6; color: #0d9488; } .dark .lbl-6 { background: rgba(20,184,166,.20); color: #5eead4; }
+.lbl-7 { background: #feeee7; color: #ea580c; } .dark .lbl-7 { background: rgba(249,115,22,.20); color: #fdba74; }
+
 /* Time estimate badge */
 .est {
   font-size: 0.72rem; font-weight: 600;

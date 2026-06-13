@@ -21,6 +21,7 @@
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
   let sortBy = 'priority'; // priority | deadline | estimate | title | newest
+  let labelFilter = '';  // when set, only show tasks with this label
   let screen = 'dashboard'; // dashboard | today | project
 
   /* ---------- Utilities ---------- */
@@ -72,6 +73,26 @@
   // Sum estimate minutes over a list of tasks.
   const sumEstimate = (tasks) => tasks.reduce((s, t) => s + (t.estimateMin || 0), 0);
 
+  /* ---------- Labels ---------- */
+  // Stable colour bucket (0–7) for a label string.
+  function labelHue(label) {
+    let h = 0;
+    for (let i = 0; i < label.length; i++) h = (h * 31 + label.charCodeAt(i)) >>> 0;
+    return h % 8;
+  }
+  // A clickable label chip (empty string if the task has no label).
+  const labelChip = (task) => task.label
+    ? `<button class="task-label lbl-${labelHue(task.label)}" data-action="filter-label" data-label="${escapeHTML(task.label)}" title="Filter by “${escapeHTML(task.label)}”">${escapeHTML(task.label)}</button>`
+    : '';
+  // All distinct labels currently in use (for autocomplete).
+  const allLabels = () => [...new Set(state.tasks.map((t) => t.label).filter(Boolean))].sort();
+
+  function refreshLabelOptions() {
+    const dl = $('#labelOptions');
+    if (!dl) return;
+    dl.innerHTML = allLabels().map((l) => `<option value="${escapeHTML(l)}"></option>`).join('');
+  }
+
   /* ---------- Persistence ---------- */
   // Local write only.
   function saveLocal() {
@@ -122,6 +143,7 @@
       if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
       if (typeof t.urgent !== 'boolean') t.urgent = false;
       if (typeof t.estimateMin !== 'number' || t.estimateMin <= 0) t.estimateMin = null;
+      if (typeof t.label !== 'string') t.label = '';
     });
     // Clean up stale todayTaskIds.
     const taskIds = new Set(state.tasks.map((t) => t.id));
@@ -1238,6 +1260,7 @@
             <p class="task-title">${escapeHTML(task.title)}</p>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
               <span class="badge badge-${task.priority}">${task.priority}</span>
+              ${labelChip(task)}
               ${estBadge(task)}
               <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
             </div>
@@ -1418,6 +1441,15 @@
     const proj = activeProject();
     let tasks = proj ? tasksFor(proj.id) : [];
 
+    refreshLabelOptions();
+    // Label filter banner
+    const bar = $('#labelFilterBar');
+    if (bar) {
+      if (labelFilter) { bar.classList.remove('hidden'); $('#labelFilterName').textContent = labelFilter; }
+      else bar.classList.add('hidden');
+    }
+    if (labelFilter) tasks = tasks.filter((t) => t.label === labelFilter);
+
     if (filter === 'active') tasks = tasks.filter((t) => !t.isCompleted);
     else if (filter === 'done') tasks = tasks.filter((t) => t.isCompleted);
 
@@ -1444,7 +1476,8 @@
     if (tasks.length === 0) {
       emptyEl.classList.remove('hidden');
       $('#emptyStateText').textContent =
-        totalForProject === 0 ? 'No tasks yet'
+        labelFilter ? `No tasks labelled “${labelFilter}”`
+        : totalForProject === 0 ? 'No tasks yet'
         : filter === 'active' ? 'No active tasks — all done!'
         : 'No completed tasks yet';
       return;
@@ -1472,6 +1505,7 @@
         <p class="task-title">${escapeHTML(task.title)}</p>
         <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
           <span class="badge badge-${task.priority}">${task.priority}</span>
+          ${labelChip(task)}
           ${estBadge(task)}
           ${dueHTML}
         </div>
@@ -1606,9 +1640,20 @@
     toast('Project renamed');
   }
 
+  function setLabelFilter(label) {
+    labelFilter = label || '';
+    if (view !== 'list') {
+      view = 'list';
+      $$('.seg-btn').forEach((b) => b.classList.toggle('is-active', b.dataset.view === 'list'));
+    }
+    if (screen !== 'project') switchScreen('project');
+    renderView();
+  }
+
   function selectProject(id) {
     state.activeProjectId = id;
     filter = 'all';
+    labelFilter = '';
     syncFilterChips();
     save();
     switchScreen('project');
@@ -1616,7 +1661,7 @@
     closeSidebar();
   }
 
-  function addTask({ title, priority, deadline, urgent, important, estimateMin }) {
+  function addTask({ title, priority, deadline, urgent, important, estimateMin, label }) {
     title = title.trim();
     if (!title || !state.activeProjectId) return;
     const task = {
@@ -1629,6 +1674,7 @@
       urgent: !!urgent,
       important: !!important,
       estimateMin: estimateMin || null,
+      label: (label || '').trim(),
     };
     state.tasks.push(task);
     save();
@@ -1662,6 +1708,7 @@
     $('#editTaskPriority').value = ['High', 'Medium', 'Low'].includes(task.priority) ? task.priority : 'Medium';
     $('#editTaskDeadline').value = task.deadline || '';
     $('#editTaskEstimate').value = task.estimateMin ? formatEstimate(task.estimateMin) : '';
+    $('#editTaskLabel').value = task.label || '';
     $('#editImportant').dataset.on = task.important ? 'true' : 'false';
     $('#editUrgent').dataset.on = task.urgent ? 'true' : 'false';
     $('#editTaskModal').classList.remove('hidden');
@@ -1683,6 +1730,7 @@
     task.priority = ['High', 'Medium', 'Low'].includes($('#editTaskPriority').value) ? $('#editTaskPriority').value : 'Medium';
     task.deadline = $('#editTaskDeadline').value || null;
     task.estimateMin = parseEstimate($('#editTaskEstimate').value);
+    task.label = $('#editTaskLabel').value.trim();
     task.important = $('#editImportant').dataset.on === 'true';
     task.urgent = $('#editUrgent').dataset.on === 'true';
     save();
@@ -1931,10 +1979,12 @@
         important: $('#newImportant').dataset.on === 'true',
         urgent: $('#newUrgent').dataset.on === 'true',
         estimateMin: parseEstimate($('#taskEstimate').value),
+        label: $('#taskLabel').value,
       });
       $('#taskTitle').value = '';
       $('#taskDeadline').value = defaultDeadline();
       $('#taskEstimate').value = '';
+      $('#taskLabel').value = '';
       $('#newImportant').dataset.on = 'false';
       $('#newUrgent').dataset.on = 'false';
       $('#taskTitle').focus();
@@ -1953,6 +2003,7 @@
         case 'edit':             openEditTask(id); break;
         case 'toggle-important': toggleTaskFlag(id, 'important'); break;
         case 'toggle-urgent':    toggleTaskFlag(id, 'urgent'); break;
+        case 'filter-label':     setLabelFilter(action.dataset.label); break;
       }
     };
     $('#taskList').addEventListener('click', handleTaskClick);
@@ -1968,6 +2019,10 @@
       if (action.dataset.action === 'today-toggle') { toggleTask(id); renderToday(); renderSidebar(); }
       if (action.dataset.action === 'today-remove') { removeFromToday(id); }
       if (action.dataset.action === 'edit') { openEditTask(id); }
+      if (action.dataset.action === 'filter-label') {
+        const task = state.tasks.find((t) => t.id === id);
+        if (task) { state.activeProjectId = task.projectId; setLabelFilter(action.dataset.label); }
+      }
     });
 
     // --- Today: fullscreen focus mode ---
@@ -2005,6 +2060,9 @@
       sortBy = e.target.value;
       renderTasks();
     });
+
+    // --- Clear label filter ---
+    $('#labelFilterClear').addEventListener('click', () => { labelFilter = ''; renderTasks(); });
 
     // --- Filters ---
     $$('.filter-chip').forEach((chip) => {
