@@ -856,14 +856,33 @@
   }
 
   function eraseAllData() {
-    if (!confirm('Erase ALL projects, tasks and settings on this device? This cannot be undone.')) return;
-    if (!confirm('Are you absolutely sure? Everything on this device will be deleted.')) return;
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('liyaa.notified');
-      localStorage.removeItem('liyaa.notifRead');
-    } catch {}
-    window.location.reload();
+    const signedIn = Cloud.enabled && Cloud.user;
+    const msg = signedIn
+      ? 'Erase ALL data — on this device AND in your cloud account? This cannot be undone.'
+      : 'Erase ALL projects, tasks and settings on this device? This cannot be undone.';
+    if (!confirm(msg)) return;
+    if (!confirm('Are you absolutely sure? Everything will be permanently deleted.')) return;
+
+    const finish = () => {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('liyaa.notified');
+        localStorage.removeItem('liyaa.notifRead');
+      } catch {}
+      window.location.reload();
+    };
+
+    if (signedIn) {
+      // Stop syncing so we don't re-push, delete the cloud doc, then sign out.
+      if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
+      Cloud.applying = true; // suppress any queued pushes
+      userDoc(Cloud.user.uid).delete()
+        .catch((err) => { console.error('Cloud delete failed:', err); toast('Could not delete cloud copy — check connection'); })
+        .then(() => firebase.auth().signOut().catch(() => {}))
+        .finally(finish);
+    } else {
+      finish();
+    }
   }
 
   /* ---------- Install as an app (PWA) ---------- */
