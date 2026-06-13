@@ -885,12 +885,43 @@
     } else { done(); }
   }
 
-  /* ---------- Scoped erase ---------- */
-  function openEraseModal() { $('#eraseModal').classList.remove('hidden'); }
-  function closeEraseModal() { $('#eraseModal').classList.add('hidden'); }
+  /* ---------- Scoped erase (in-app confirm, no native dialogs) ---------- */
+  let pendingErase = null;
+  const ERASE_MSG = {
+    tasks:    'Remove every task from every project? Your projects stay. This cannot be undone.',
+    projects: 'Delete every project and its tasks, leaving one empty “General” project? This cannot be undone.',
+    quotes:   'Remove all your custom quotes and restore the built-in ones to default?',
+    all:      'Erase ALL data on this device AND in your cloud account (if signed in), then sign out? This cannot be undone.',
+  };
+
+  function showEraseOptions() {
+    pendingErase = null;
+    $('#eraseOptions').classList.remove('hidden');
+    $('#eraseConfirm').classList.add('hidden');
+    $('#eraseHeading').textContent = 'What would you like to erase?';
+    $('#eraseSubheading').textContent = "Pick how much to clear. This can't be undone.";
+  }
+  function openEraseModal() { showEraseOptions(); $('#eraseModal').classList.remove('hidden'); }
+  function closeEraseModal() { $('#eraseModal').classList.add('hidden'); pendingErase = null; }
+
+  function askErase(what) {
+    pendingErase = what;
+    $('#eraseOptions').classList.add('hidden');
+    $('#eraseConfirm').classList.remove('hidden');
+    $('#eraseHeading').textContent = 'Are you sure?';
+    $('#eraseSubheading').textContent = 'This cannot be undone.';
+    $('#eraseConfirmMsg').textContent = ERASE_MSG[what] || '';
+  }
+
+  function runPendingErase() {
+    const what = pendingErase;
+    if (what === 'tasks') eraseTasksOnly();
+    else if (what === 'projects') eraseProjectsAndTasks();
+    else if (what === 'quotes') eraseQuotes();
+    else if (what === 'all') eraseAllData();
+  }
 
   function eraseTasksOnly() {
-    if (!confirm('Remove ALL tasks from every project? Your projects stay. This cannot be undone.')) return;
     state.tasks = [];
     state.todayTaskIds = [];
     save();
@@ -900,7 +931,6 @@
   }
 
   function eraseProjectsAndTasks() {
-    if (!confirm('Delete ALL projects and their tasks? This cannot be undone.')) return;
     const general = { id: uid(), name: 'General' };
     state.projects = [general];
     state.activeProjectId = general.id;
@@ -914,7 +944,6 @@
   }
 
   function eraseQuotes() {
-    if (!confirm('Remove all your custom quotes and reset the built-in ones to default?')) return;
     state.customQuotes = [];
     state.hiddenQuotes = [];
     save();
@@ -926,12 +955,6 @@
 
   function eraseAllData() {
     const signedIn = Cloud.enabled && Cloud.user;
-    const msg = signedIn
-      ? 'Erase ALL data — on this device AND in your cloud account? This cannot be undone.'
-      : 'Erase ALL projects, tasks and settings on this device? This cannot be undone.';
-    if (!confirm(msg)) return;
-    if (!confirm('Are you absolutely sure? Everything will be permanently deleted.')) return;
-
     const finish = () => {
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -1709,19 +1732,16 @@
     $('#resetCacheBtn').addEventListener('click', resetCache);
     $('#installAppBtn').addEventListener('click', installApp);
 
-    // --- Erase (scoped) ---
+    // --- Erase (scoped, two-step in-app confirm) ---
     $('#eraseDataBtn').addEventListener('click', openEraseModal);
     $('#eraseClose').addEventListener('click', closeEraseModal);
     $('#eraseOverlay').addEventListener('click', closeEraseModal);
-    $('#eraseModal').addEventListener('click', (e) => {
+    $('#eraseOptions').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-erase]');
-      if (!btn) return;
-      const what = btn.dataset.erase;
-      if (what === 'tasks') eraseTasksOnly();
-      else if (what === 'projects') eraseProjectsAndTasks();
-      else if (what === 'quotes') eraseQuotes();
-      else if (what === 'all') { closeEraseModal(); eraseAllData(); }
+      if (btn) askErase(btn.dataset.erase);
     });
+    $('#eraseCancel').addEventListener('click', showEraseOptions);
+    $('#eraseConfirmYes').addEventListener('click', runPendingErase);
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
