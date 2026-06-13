@@ -17,6 +17,7 @@
     user: { name: '' },  // the person using the app
     customQuotes: [],    // user-added motivation quotes { text, source }
     hiddenQuotes: [],    // indices of built-in quotes the user removed
+    countdown: { date: null, label: '' }, // custom day countdown
   };
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
@@ -122,6 +123,7 @@
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
         customQuotes: Array.isArray(parsed.customQuotes) ? parsed.customQuotes : [],
         hiddenQuotes: Array.isArray(parsed.hiddenQuotes) ? parsed.hiddenQuotes : [],
+        countdown: (parsed.countdown && typeof parsed.countdown === 'object') ? parsed.countdown : { date: null, label: '' },
       };
     }
     normalizeState();
@@ -151,6 +153,7 @@
 
     if (!Array.isArray(state.customQuotes)) state.customQuotes = [];
     if (!Array.isArray(state.hiddenQuotes)) state.hiddenQuotes = [];
+    if (!state.countdown || typeof state.countdown !== 'object') state.countdown = { date: null, label: '' };
   }
 
   function load() {
@@ -1220,8 +1223,70 @@
     $('#dayProgressBar').style.width = elapsedPct.toFixed(1) + '%';
   }
 
+  /* ---------- Custom day countdown ---------- */
+  function fullDate(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function renderCountdown() {
+    const disp = $('#countdownDisplay');
+    if (!disp) return;
+    const c = state.countdown || {};
+    const editBtn = $('#countdownEditBtn');
+    if (!c.date) {
+      disp.innerHTML = `<p class="font-semibold text-slate-800">Day countdown</p>
+        <p class="text-sm text-slate-500 mt-0.5">Count down to an exam, trip, Eid or any date you choose.</p>`;
+      if (editBtn) editBtn.textContent = 'Set';
+      return;
+    }
+    const target = new Date(c.date + 'T00:00:00');
+    const days = Math.round((target - todayStart()) / 86400000);
+    let big;
+    if (days > 0) big = `${days} day${days === 1 ? '' : 's'} left`;
+    else if (days === 0) big = 'It’s today! 🎉';
+    else big = `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} ago`;
+    disp.innerHTML = `
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">${c.label ? escapeHTML(c.label) : 'Countdown'}</p>
+      <p class="text-2xl font-extrabold text-indigo-600 tabular-nums leading-tight mt-0.5">${big}</p>
+      <p class="text-sm text-slate-400 mt-0.5">${escapeHTML(fullDate(c.date))}</p>`;
+    if (editBtn) editBtn.textContent = 'Edit';
+  }
+
+  function toggleCountdownForm() {
+    const form = $('#countdownForm');
+    const opening = form.classList.contains('hidden');
+    form.classList.toggle('hidden');
+    if (opening) {
+      $('#countdownLabel').value = state.countdown.label || '';
+      $('#countdownDate').value = state.countdown.date || defaultDeadline(30);
+      setTimeout(() => $('#countdownDate').focus(), 50);
+    }
+  }
+
+  function saveCountdown(e) {
+    e.preventDefault();
+    const date = $('#countdownDate').value;
+    if (!date) { toast('Pick a date first'); return; }
+    state.countdown = { date, label: $('#countdownLabel').value.trim() };
+    save();
+    renderCountdown();
+    $('#countdownForm').classList.add('hidden');
+    toast('Countdown set');
+  }
+
+  function clearCountdown() {
+    state.countdown = { date: null, label: '' };
+    save();
+    renderCountdown();
+    $('#countdownForm').classList.add('hidden');
+    toast('Countdown cleared');
+  }
+
   /* ---------- Today's Focus ---------- */
   function renderToday() {
+    renderCountdown();
     const todayTasks = state.todayTaskIds
       .map((id) => state.tasks.find((t) => t.id === id))
       .filter(Boolean);
@@ -2037,6 +2102,11 @@
         if (task) { state.activeProjectId = task.projectId; setLabelFilter(action.dataset.label); }
       }
     });
+
+    // --- Today: day countdown ---
+    $('#countdownEditBtn').addEventListener('click', toggleCountdownForm);
+    $('#countdownForm').addEventListener('submit', saveCountdown);
+    $('#countdownClear').addEventListener('click', clearCountdown);
 
     // --- Today: fullscreen focus mode ---
     $('#todayFullscreenBtn').addEventListener('click', toggleFullscreen);
