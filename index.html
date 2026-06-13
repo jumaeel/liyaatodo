@@ -807,10 +807,13 @@
             <!-- Custom quotes -->
             <section class="panel">
               <div class="panel-head">
-                <h3 class="panel-title">Your motivation quotes</h3>
-                <span class="text-xs text-slate-400">shown in Today's Focus</span>
+                <h3 class="panel-title">Motivation quotes</h3>
+                <div class="flex items-center gap-2.5">
+                  <span id="quoteCount" class="text-xs text-slate-400"></span>
+                  <button id="restoreQuotesBtn" class="hidden text-xs font-bold text-indigo-600 hover:text-indigo-700 transition">Restore defaults</button>
+                </div>
               </div>
-              <p class="text-sm text-slate-500 mb-3">Add your own quotes to the rotation. They sync with your account and appear alongside the built-in ones.</p>
+              <p class="text-sm text-slate-500 mb-3">These show on Today's Focus. Add your own (they sync to your account), and remove any below — built-in or yours.</p>
               <form id="addQuoteForm" class="space-y-2.5">
                 <textarea id="quoteInput" rows="2" maxlength="280" placeholder="Write a quote that motivates you…"
                   class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
@@ -964,6 +967,40 @@
             Save
           </button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Erase Data Modal -->
+  <div id="eraseModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div id="eraseOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    <div class="relative h-full grid place-items-center p-4">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900">What would you like to erase?</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Pick how much to clear. This can't be undone.</p>
+          </div>
+          <button id="eraseClose" class="w-8 h-8 grid place-items-center rounded-lg hover:bg-slate-100 text-slate-400 text-lg font-bold leading-none transition">&times;</button>
+        </div>
+        <div class="mt-4 space-y-2.5">
+          <button data-erase="tasks" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition">
+            <p class="font-semibold text-slate-800 text-sm">Clear all tasks</p>
+            <p class="text-xs text-slate-500 mt-0.5">Removes every task from every project. Your projects stay.</p>
+          </button>
+          <button data-erase="projects" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition">
+            <p class="font-semibold text-slate-800 text-sm">Delete all projects &amp; tasks</p>
+            <p class="text-xs text-slate-500 mt-0.5">Deletes every project and its tasks, leaving one empty “General” project.</p>
+          </button>
+          <button data-erase="quotes" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition">
+            <p class="font-semibold text-slate-800 text-sm">Reset quotes</p>
+            <p class="text-xs text-slate-500 mt-0.5">Removes your custom quotes and restores the built-in ones to default.</p>
+          </button>
+          <button data-erase="all" class="w-full text-left p-3.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 transition">
+            <p class="font-semibold text-red-700 text-sm">Erase everything</p>
+            <p class="text-xs text-red-500/90 mt-0.5">Wipes this device <b>and your cloud account</b> (if signed in), then signs you out.</p>
+          </button>
+        </div>
       </div>
     </div>
   </div>

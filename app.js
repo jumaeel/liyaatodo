@@ -16,6 +16,7 @@
     todayTaskIds: [],    // up to 5 task IDs selected for today
     user: { name: '' },  // the person using the app
     customQuotes: [],    // user-added motivation quotes { text, source }
+    hiddenQuotes: [],    // indices of built-in quotes the user removed
   };
   let filter = 'all';    // all | active | done
   let view   = 'list';   // list | matrix
@@ -98,6 +99,7 @@
         todayTaskIds: Array.isArray(parsed.todayTaskIds) ? parsed.todayTaskIds : [],
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
         customQuotes: Array.isArray(parsed.customQuotes) ? parsed.customQuotes : [],
+        hiddenQuotes: Array.isArray(parsed.hiddenQuotes) ? parsed.hiddenQuotes : [],
       };
     }
     normalizeState();
@@ -125,6 +127,7 @@
     state.todayTaskIds = state.todayTaskIds.filter((id) => taskIds.has(id));
 
     if (!Array.isArray(state.customQuotes)) state.customQuotes = [];
+    if (!Array.isArray(state.hiddenQuotes)) state.hiddenQuotes = [];
   }
 
   function load() {
@@ -797,21 +800,36 @@
   function renderSettings() {
     const list = $('#customQuoteList');
     if (!list) return;
-    const quotes = state.customQuotes || [];
-    if (quotes.length === 0) {
-      list.innerHTML = '<p class="text-sm text-slate-400 py-2">No custom quotes yet — add one above.</p>';
+
+    // Build the full visible set: built-ins not hidden + custom.
+    const hidden = new Set(state.hiddenQuotes || []);
+    const entries = [];
+    QUOTES.forEach((q, i) => { if (!hidden.has(i)) entries.push({ kind: 'builtin', idx: i, text: q.text, source: q.source }); });
+    (state.customQuotes || []).forEach((q, i) => entries.push({ kind: 'custom', idx: i, text: q.text, source: (q.source ? q.source + ' · ' : '') + 'Your quote' }));
+
+    const total = QUOTES.length + (state.customQuotes || []).length;
+    const countEl = $('#quoteCount');
+    if (countEl) countEl.textContent = `${entries.length} of ${total} active`;
+    const restore = $('#restoreQuotesBtn');
+    if (restore) restore.classList.toggle('hidden', hidden.size === 0);
+
+    if (entries.length === 0) {
+      list.innerHTML = '<p class="text-sm text-slate-400 py-2">No quotes are active. Add one above or restore the defaults.</p>';
     } else {
       list.innerHTML = '';
-      quotes.forEach((q, i) => {
+      entries.forEach((e) => {
         const row = document.createElement('div');
         row.className = 'flex items-start gap-3 p-3 rounded-xl bg-slate-50';
+        const tag = e.kind === 'custom'
+          ? '<span class="text-[10px] font-bold uppercase tracking-wide text-indigo-500 bg-indigo-100 px-1.5 py-0.5 rounded">yours</span>'
+          : '';
         row.innerHTML = `
           <span class="text-indigo-400 text-lg leading-none shrink-0">“</span>
           <div class="min-w-0 flex-1">
-            <p class="text-sm text-slate-700">${escapeHTML(q.text)}</p>
-            ${q.source ? `<p class="text-xs text-slate-400 mt-1">— ${escapeHTML(q.source)}</p>` : ''}
+            <p class="text-sm text-slate-700">${escapeHTML(e.text)}</p>
+            <p class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">${tag}<span>— ${escapeHTML(e.source)}</span></p>
           </div>
-          <button class="shrink-0 w-8 h-8 grid place-items-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition" data-del-quote="${i}" title="Remove" aria-label="Remove quote">
+          <button class="shrink-0 w-8 h-8 grid place-items-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition" data-rm-kind="${e.kind}" data-rm-idx="${e.idx}" title="Remove" aria-label="Remove quote">
             <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
           </button>`;
         list.appendChild(row);
@@ -834,13 +852,25 @@
     toast('Quote added to your rotation');
   }
 
-  function removeCustomQuote(i) {
-    if (i < 0 || i >= state.customQuotes.length) return;
-    state.customQuotes.splice(i, 1);
+  function removeQuote(kind, idx) {
+    if (kind === 'custom') {
+      if (idx < 0 || idx >= state.customQuotes.length) return;
+      state.customQuotes.splice(idx, 1);
+    } else {
+      if (!state.hiddenQuotes.includes(idx)) state.hiddenQuotes.push(idx);
+    }
     save();
     renderSettings();
     renderQuote();
     toast('Quote removed');
+  }
+
+  function restoreDefaultQuotes() {
+    state.hiddenQuotes = [];
+    save();
+    renderSettings();
+    renderQuote();
+    toast('Default quotes restored');
   }
 
   function resetCache() {
@@ -853,6 +883,45 @@
         .then((regs) => Promise.all([...regs].map((r) => r.update().catch(() => {}))))
         .finally(done);
     } else { done(); }
+  }
+
+  /* ---------- Scoped erase ---------- */
+  function openEraseModal() { $('#eraseModal').classList.remove('hidden'); }
+  function closeEraseModal() { $('#eraseModal').classList.add('hidden'); }
+
+  function eraseTasksOnly() {
+    if (!confirm('Remove ALL tasks from every project? Your projects stay. This cannot be undone.')) return;
+    state.tasks = [];
+    state.todayTaskIds = [];
+    save();
+    render();
+    closeEraseModal();
+    toast('All tasks cleared');
+  }
+
+  function eraseProjectsAndTasks() {
+    if (!confirm('Delete ALL projects and their tasks? This cannot be undone.')) return;
+    const general = { id: uid(), name: 'General' };
+    state.projects = [general];
+    state.activeProjectId = general.id;
+    state.tasks = [];
+    state.todayTaskIds = [];
+    save();
+    switchScreen('dashboard');
+    render();
+    closeEraseModal();
+    toast('All projects and tasks deleted');
+  }
+
+  function eraseQuotes() {
+    if (!confirm('Remove all your custom quotes and reset the built-in ones to default?')) return;
+    state.customQuotes = [];
+    state.hiddenQuotes = [];
+    save();
+    renderSettings();
+    renderQuote();
+    closeEraseModal();
+    toast('Quotes reset to default');
   }
 
   function eraseAllData() {
@@ -951,18 +1020,26 @@
   ];
   let quoteIdx = 0;
 
-  // Built-in quotes + the user's own custom quotes.
+  // Active quotes = built-ins the user hasn't removed + their own custom ones.
   function allQuotes() {
+    const hidden = new Set(state.hiddenQuotes || []);
+    const builtin = QUOTES.filter((_, i) => !hidden.has(i));
     const custom = (state.customQuotes || []).map((q) => ({
       text: q.text, source: (q.source ? q.source + ' ' : '') + '✍️ Your quote', note: '',
     }));
-    return QUOTES.concat(custom);
+    return builtin.concat(custom);
   }
 
   function renderQuote() {
     const el = $('#quoteText');
     if (!el) return;
     const list = allQuotes();
+    if (list.length === 0) {
+      el.textContent = '“Add a quote in Settings to see it here.”';
+      $('#quoteSource').textContent = '— Liyaatodo';
+      $('#quoteNote').classList.add('hidden');
+      return;
+    }
     const q = list[quoteIdx % list.length];
     el.textContent = `“${q.text}”`;
     $('#quoteSource').textContent = `— ${q.source}`;
@@ -972,7 +1049,7 @@
   }
 
   function rotateQuote() {
-    quoteIdx = (quoteIdx + 1) % allQuotes().length;
+    quoteIdx = (quoteIdx + 1) % (allQuotes().length || 1);
     renderQuote();
   }
 
@@ -1625,12 +1702,26 @@
     // --- Settings ---
     $('#addQuoteForm').addEventListener('submit', addCustomQuote);
     $('#customQuoteList').addEventListener('click', (e) => {
-      const del = e.target.closest('[data-del-quote]');
-      if (del) removeCustomQuote(parseInt(del.dataset.delQuote, 10));
+      const rm = e.target.closest('[data-rm-kind]');
+      if (rm) removeQuote(rm.dataset.rmKind, parseInt(rm.dataset.rmIdx, 10));
     });
+    $('#restoreQuotesBtn').addEventListener('click', restoreDefaultQuotes);
     $('#resetCacheBtn').addEventListener('click', resetCache);
-    $('#eraseDataBtn').addEventListener('click', eraseAllData);
     $('#installAppBtn').addEventListener('click', installApp);
+
+    // --- Erase (scoped) ---
+    $('#eraseDataBtn').addEventListener('click', openEraseModal);
+    $('#eraseClose').addEventListener('click', closeEraseModal);
+    $('#eraseOverlay').addEventListener('click', closeEraseModal);
+    $('#eraseModal').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-erase]');
+      if (!btn) return;
+      const what = btn.dataset.erase;
+      if (what === 'tasks') eraseTasksOnly();
+      else if (what === 'projects') eraseProjectsAndTasks();
+      else if (what === 'quotes') eraseQuotes();
+      else if (what === 'all') { closeEraseModal(); eraseAllData(); }
+    });
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
@@ -1772,7 +1863,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); }
     });
 
     // --- Drag & drop ---
