@@ -873,6 +873,44 @@
     toast('Default quotes restored');
   }
 
+  /* ---------- Backup: export / import ---------- */
+  function exportData() {
+    const json = JSON.stringify(state, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const d = new Date();
+    const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `liyaatodo-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Backup downloaded ✓');
+  }
+
+  function importData(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let parsed;
+      try { parsed = JSON.parse(reader.result); }
+      catch { toast("That file isn't valid — couldn't read it"); return; }
+      if (!parsed || !Array.isArray(parsed.projects) || !Array.isArray(parsed.tasks)) {
+        toast("That doesn't look like a Liyaatodo backup");
+        return;
+      }
+      setStateFrom(parsed);
+      save();
+      switchScreen('dashboard');
+      render();
+      toast('Backup restored ✓');
+    };
+    reader.onerror = () => toast('Could not read that file');
+    reader.readAsText(file);
+  }
+
   function resetCache() {
     if (!confirm('Clear the app cache and reload? Your tasks are kept.')) return;
     const done = () => window.location.reload();
@@ -1729,6 +1767,8 @@
       if (rm) removeQuote(rm.dataset.rmKind, parseInt(rm.dataset.rmIdx, 10));
     });
     $('#restoreQuotesBtn').addEventListener('click', restoreDefaultQuotes);
+    $('#exportDataBtn').addEventListener('click', exportData);
+    $('#importDataInput').addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
     $('#resetCacheBtn').addEventListener('click', resetCache);
     $('#installAppBtn').addEventListener('click', installApp);
 
