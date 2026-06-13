@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#5b6cf2" />
+  <meta name="theme-color" content="#0f5e57" />
   <title>Liyaatodo · Daily Progress Dashboard</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="logo-mark.svg" type="image/svg+xml" />
@@ -11,12 +11,32 @@
   <!-- Tailwind CSS (CDN, configured below) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // ── Ink & Amber design system ──
+    // Remap slate→warm taupe/ink and indigo→deep teal so every existing
+    // utility class re-skins to the editorial palette. Amber is layered in via CSS.
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'Segoe UI', 'system-ui', 'sans-serif'] },
+          fontFamily: {
+            sans: ['Hanken Grotesk', 'Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+            display: ['Fraunces', 'Georgia', 'Times New Roman', 'serif'],
+          },
           borderRadius: { xl2: '12px' },
+          colors: {
+            // warm taupe → ink (was cool slate)
+            slate: {
+              50: '#f6f1e6', 100: '#efe8da', 200: '#e4dccb', 300: '#d3cab6',
+              400: '#a39c8d', 500: '#7c7568', 600: '#5f594e', 700: '#45413a',
+              800: '#2e2b25', 900: '#1c1a17',
+            },
+            // deep teal — the primary interactive colour (was indigo blue)
+            indigo: {
+              50: '#e6f2f0', 100: '#cfe6e2', 200: '#a8d4ce', 300: '#7bbcb3',
+              400: '#3f9c91', 500: '#1f7d72', 600: '#15665d', 700: '#0f5e57',
+              800: '#0c4a45', 900: '#0a3b37',
+            },
+          },
         },
       },
     };
@@ -35,7 +55,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -53,12 +73,12 @@
         class="flex items-center gap-3 px-4 h-20 shrink-0 cursor-pointer rounded-xl hover:bg-slate-50 transition">
         <img src="logo-mark.svg" alt="Liyaatodo" class="w-14 h-14 shrink-0" />
         <div class="leading-none">
-          <h1 class="font-extrabold text-2xl tracking-tight">
-            <span class="text-slate-900">Liyaa</span><span style="color:#5b6cf2">todo</span>
+          <h1 class="font-display font-black text-2xl tracking-tight">
+            <span class="text-slate-900">Liyaa</span><span style="color:#c47512">todo</span>
           </h1>
           <svg class="mt-1 w-[120px]" viewBox="0 0 120 16" fill="none" aria-hidden="true">
-            <path d="M3 9c30 6 64 5 95-3" stroke="#f5a623" stroke-width="5" stroke-linecap="round"/>
-            <path d="M103 8l5 5 9-11" stroke="#5b6cf2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 9c30 6 64 5 95-3" stroke="#e0922a" stroke-width="5" stroke-linecap="round"/>
+            <path d="M103 8l5 5 9-11" stroke="#0f5e57" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
       </div>
@@ -179,7 +199,7 @@
               <div class="relative p-7 sm:p-9 max-w-2xl">
                 <span id="bannerEyebrow" class="vb-eyebrow">Your productivity, organized</span>
                 <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight vb-title">
-                  Turn daily chaos into <span class="vb-accent">clear progress<svg class="vb-swoosh" viewBox="0 0 220 22" fill="none" aria-hidden="true"><path d="M4 13c56 9 118 8 178-5" stroke="#f5a623" stroke-width="7" stroke-linecap="round"/><path d="M188 12l9 8 16-19" stroke="#5b6cf2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  Turn daily chaos into <span class="vb-accent">clear progress<svg class="vb-swoosh" viewBox="0 0 220 22" fill="none" aria-hidden="true"><path d="M4 13c56 9 118 8 178-5" stroke="#e0922a" stroke-width="7" stroke-linecap="round"/><path d="M188 12l9 8 16-19" stroke="#0f5e57" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </h2>
                 <p class="mt-4 vb-sub sm:text-lg">Liyaatodo helps you capture every task, prioritize what truly matters with the Eisenhower method, and watch real progress build across all your projects — one focused day at a time.</p>
                 <div class="mt-6 flex flex-wrap gap-3">
@@ -231,10 +251,10 @@
                   <svg viewBox="0 0 200 116" class="w-full max-w-[240px] mx-auto block">
                     <defs>
                       <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#047857"/>
+                        <stop offset="0%" stop-color="#f0a23a"/><stop offset="100%" stop-color="#0f5e57"/>
                       </linearGradient>
                     </defs>
-                    <path d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke="#eaeef2" stroke-width="18" stroke-linecap="round"/>
+                    <path d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke="#e7dfcd" stroke-width="18" stroke-linecap="round"/>
                     <path id="gaugeFill" d="M16 104 A 88 88 0 0 1 184 104" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round"
                       pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" style="transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);"/>
                   </svg>
@@ -578,10 +598,10 @@
                 <button class="guide-card" data-goto="project">
                   <div class="gc-art">
                     <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
-                      <rect x="22" y="30" width="52" height="50" rx="8" fill="#eef0fe"/>
-                      <path d="M22 38c0-4.4 3.6-8 8-8h12l6 7h26v43H30a8 8 0 0 1-8-8V38z" fill="#5b6cf2"/>
-                      <rect x="58" y="22" width="56" height="58" rx="8" fill="#c2c8fa"/>
-                      <path d="M58 30c0-4.4 3.6-8 8-8h13l6 7h29v43a8 8 0 0 1-8 8H58V30z" fill="#8b97f7"/>
+                      <rect x="22" y="30" width="52" height="50" rx="8" fill="#e6f2f0"/>
+                      <path d="M22 38c0-4.4 3.6-8 8-8h12l6 7h26v43H30a8 8 0 0 1-8-8V38z" fill="#0f5e57"/>
+                      <rect x="58" y="22" width="56" height="58" rx="8" fill="#a8d4ce"/>
+                      <path d="M58 30c0-4.4 3.6-8 8-8h13l6 7h29v43a8 8 0 0 1-8 8H58V30z" fill="#5fb3a8"/>
                       <rect x="96" y="36" width="42" height="44" rx="8" fill="#fbc55f"/>
                       <path d="M96 44c0-4.4 3.6-8 8-8h9l5 6h20v38h-34a8 8 0 0 1-8-8V44z" fill="#f3a429"/>
                     </svg>
@@ -594,15 +614,15 @@
                 <button class="guide-card" data-goto="project">
                   <div class="gc-art">
                     <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
-                      <rect x="35" y="14" width="90" height="72" rx="10" fill="#eef0fe"/>
-                      <rect x="46" y="26" width="14" height="14" rx="4" fill="#5b6cf2"/>
+                      <rect x="35" y="14" width="90" height="72" rx="10" fill="#e6f2f0"/>
+                      <rect x="46" y="26" width="14" height="14" rx="4" fill="#0f5e57"/>
                       <path d="M49.5 33l3 3 5-6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                      <rect x="67" y="29" width="46" height="7" rx="3.5" fill="#c2c8fa"/>
-                      <rect x="46" y="48" width="14" height="14" rx="4" fill="#5b6cf2"/>
+                      <rect x="67" y="29" width="46" height="7" rx="3.5" fill="#a8d4ce"/>
+                      <rect x="46" y="48" width="14" height="14" rx="4" fill="#0f5e57"/>
                       <path d="M49.5 55l3 3 5-6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                      <rect x="67" y="51" width="38" height="7" rx="3.5" fill="#c2c8fa"/>
-                      <rect x="46" y="70" width="14" height="14" rx="4" fill="#fff" stroke="#c2c8fa" stroke-width="2"/>
-                      <rect x="67" y="73" width="30" height="7" rx="3.5" fill="#e0e3fd"/>
+                      <rect x="67" y="51" width="38" height="7" rx="3.5" fill="#a8d4ce"/>
+                      <rect x="46" y="70" width="14" height="14" rx="4" fill="#fff" stroke="#a8d4ce" stroke-width="2"/>
+                      <rect x="67" y="73" width="30" height="7" rx="3.5" fill="#d3e8e4"/>
                       <path d="M118 84l14-14c2.2-2.2 2.2-5.8 0-8s-5.8-2.2-8 0l-14 14-2 10 10-2z" fill="#f3a429"/>
                       <path d="M110 86l8-2-6-6-2 8z" fill="#f4517d"/>
                     </svg>
@@ -615,17 +635,17 @@
                 <button class="guide-card" data-goto="today">
                   <div class="gc-art">
                     <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
-                      <circle cx="80" cy="50" r="34" fill="#eef0fe"/>
-                      <circle cx="80" cy="50" r="24" fill="#c2c8fa"/>
-                      <circle cx="80" cy="50" r="14" fill="#5b6cf2"/>
+                      <circle cx="80" cy="50" r="34" fill="#e6f2f0"/>
+                      <circle cx="80" cy="50" r="24" fill="#a8d4ce"/>
+                      <circle cx="80" cy="50" r="14" fill="#0f5e57"/>
                       <circle cx="80" cy="50" r="5" fill="#fff"/>
                       <path d="M80 50L106 24" stroke="#f3a429" stroke-width="5" stroke-linecap="round"/>
                       <path d="M106 24l8-2-2 8-8 2 2-8z" fill="#f3a429"/>
-                      <rect x="22" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
-                      <rect x="36" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
-                      <rect x="50" y="78" width="10" height="6" rx="3" fill="#5b6cf2"/>
-                      <rect x="64" y="78" width="10" height="6" rx="3" fill="#e0e3fd"/>
-                      <rect x="78" y="78" width="10" height="6" rx="3" fill="#e0e3fd"/>
+                      <rect x="22" y="78" width="10" height="6" rx="3" fill="#0f5e57"/>
+                      <rect x="36" y="78" width="10" height="6" rx="3" fill="#0f5e57"/>
+                      <rect x="50" y="78" width="10" height="6" rx="3" fill="#0f5e57"/>
+                      <rect x="64" y="78" width="10" height="6" rx="3" fill="#d3e8e4"/>
+                      <rect x="78" y="78" width="10" height="6" rx="3" fill="#d3e8e4"/>
                     </svg>
                   </div>
                   <p class="gc-title">3 · Pick Today’s Focus</p>
@@ -636,12 +656,12 @@
                 <button class="guide-card" data-goto="dashboard">
                   <div class="gc-art">
                     <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
-                      <rect x="24" y="16" width="112" height="68" rx="10" fill="#eef0fe"/>
-                      <path d="M52 76a28 28 0 1 1 56 0" stroke="#e0e3fd" stroke-width="9" stroke-linecap="round"/>
-                      <path d="M52 76a28 28 0 0 1 42-24" stroke="#5b6cf2" stroke-width="9" stroke-linecap="round"/>
-                      <rect x="114" y="58" width="8" height="18" rx="3" fill="#8b97f7"/>
+                      <rect x="24" y="16" width="112" height="68" rx="10" fill="#e6f2f0"/>
+                      <path d="M52 76a28 28 0 1 1 56 0" stroke="#d3e8e4" stroke-width="9" stroke-linecap="round"/>
+                      <path d="M52 76a28 28 0 0 1 42-24" stroke="#0f5e57" stroke-width="9" stroke-linecap="round"/>
+                      <rect x="114" y="58" width="8" height="18" rx="3" fill="#5fb3a8"/>
                       <rect x="114" y="40" width="8" height="14" rx="3" fill="#fbc55f" transform="translate(0 0)"/>
-                      <rect x="38" y="58" width="8" height="18" rx="3" fill="#8b97f7"/>
+                      <rect x="38" y="58" width="8" height="18" rx="3" fill="#5fb3a8"/>
                     </svg>
                   </div>
                   <p class="gc-title">4 · Watch progress</p>
@@ -671,8 +691,8 @@
                 <button class="guide-card" data-goto="account">
                   <div class="gc-art">
                     <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
-                      <path d="M52 70a18 18 0 0 1 2-35.9A24 24 0 0 1 100 28a20 20 0 0 1 8 38.9" fill="#c2c8fa"/>
-                      <path d="M48 76a16 16 0 0 1 2-31.9A22 22 0 0 1 94 38a18 18 0 0 1 7 35" fill="#5b6cf2"/>
+                      <path d="M52 70a18 18 0 0 1 2-35.9A24 24 0 0 1 100 28a20 20 0 0 1 8 38.9" fill="#a8d4ce"/>
+                      <path d="M48 76a16 16 0 0 1 2-31.9A22 22 0 0 1 94 38a18 18 0 0 1 7 35" fill="#0f5e57"/>
                       <path d="M71 72l8 8 13-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
                       <circle cx="124" cy="26" r="4" fill="#fbc55f"/>
                       <circle cx="34" cy="30" r="3" fill="#f4517d"/>

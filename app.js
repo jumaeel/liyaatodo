@@ -549,7 +549,7 @@
     // Priority breakdown
     const prioEl = $('#priorityBreakdown');
     prioEl.innerHTML = '';
-    const prColors = { High: '#ef4444', Medium: '#f97316', Low: '#94a3b8' };
+    const prColors = { High: '#e0492f', Medium: '#d8821f', Low: '#a39c8d' };
     ['High', 'Medium', 'Low'].forEach((pr) => {
       const cnt = allTasks.filter((t) => t.priority === pr).length;
       const p = total === 0 ? 0 : Math.round((cnt / total) * 100);
