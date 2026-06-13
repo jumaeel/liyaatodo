@@ -796,6 +796,58 @@
   }
 
   /* ============================================================
+     CHANGELOG  ("What's new")
+     ============================================================ */
+  const CHANGELOG = [
+    { v: '2.6', type: 'feature',     title: 'Sort your task list',            desc: 'Sort a project’s tasks by priority, deadline, estimated time, name, or newest.' },
+    { v: '2.5', type: 'feature',     title: 'Backup & restore',               desc: 'Export all your data to a file and import it back anytime — perfect for moving devices or keeping a safe copy.' },
+    { v: '2.4', type: 'fix',         title: 'Erase options fixed',            desc: 'The “what to erase” choices now use an in-app confirm, so they work reliably everywhere — including the installed app.' },
+    { v: '2.3', type: 'feature',     title: 'Settings & your own quotes',     desc: 'A new Settings screen: add and manage your own motivation quotes, reset the cache, and erase data by scope.' },
+    { v: '2.2', type: 'feature',     title: 'Install as an app',              desc: 'Install Liyaatodo to your home screen or desktop for a full-screen, offline experience.' },
+    { v: '2.1', type: 'feature',     title: 'Notifications',                  desc: 'A working bell with overdue, due-today and due-tomorrow alerts, focus reminders, and optional browser notifications.' },
+    { v: '2.0', type: 'feature',     title: 'Edit tasks · rename & reorder projects', desc: 'Edit any task’s details with the pencil, and rename or move your projects from the sidebar.' },
+    { v: '1.9', type: 'feature',     title: 'Today’s Focus, supercharged',    desc: 'A live clock, “time left today”, rotating motivation quotes, and a distraction-free fullscreen focus mode.' },
+    { v: '1.8', type: 'improvement', title: 'Clearer Focus Matrix',           desc: 'The dashboard matrix now explains each quadrant and lists your actual tasks — tap one to open its project.' },
+    { v: '1.7', type: 'feature',     title: 'Time estimates',                 desc: 'Add an estimated time to any task and see how much work each project needs.' },
+    { v: '1.6', type: 'feature',     title: 'Dark mode',                      desc: 'Switch between light and dark themes from the top bar.' },
+    { v: '1.5', type: 'feature',     title: 'Google sign-in & cloud sync',    desc: 'Sign in to save your progress and sync it automatically across all your devices.' },
+    { v: '1.0', type: 'feature',     title: 'Today’s Focus & dashboard',      desc: 'Pick up to 5 tasks from any project for today, and track real progress across everything on the dashboard.' },
+  ];
+  const CHANGELOG_VERSION = CHANGELOG[0].v;
+
+  function renderChangelog() {
+    const list = $('#changelogList');
+    if (!list) return;
+    const tags = {
+      feature:     { label: 'New Feature', cls: 'cl-feature' },
+      improvement: { label: 'Improvement', cls: 'cl-improvement' },
+      fix:         { label: 'Fix',         cls: 'cl-fix' },
+    };
+    list.innerHTML = CHANGELOG.map((c) => {
+      const t = tags[c.type] || tags.feature;
+      return `
+        <div class="cl-entry">
+          <span class="cl-tag ${t.cls}">${t.label}</span>
+          <p class="cl-body"><span class="cl-head">v${c.v} — ${escapeHTML(c.title)}.</span> <span class="cl-desc">${escapeHTML(c.desc)}</span></p>
+        </div>`;
+    }).join('');
+  }
+
+  function openChangelog() {
+    renderChangelog();
+    $('#changelogModal').classList.remove('hidden');
+    try { localStorage.setItem('liyaa.changelogSeen', CHANGELOG_VERSION); } catch {}
+    $('#whatsNewDot').classList.add('hidden');
+  }
+  function closeChangelog() { $('#changelogModal').classList.add('hidden'); }
+
+  function syncWhatsNewDot() {
+    let seen = null;
+    try { seen = localStorage.getItem('liyaa.changelogSeen'); } catch {}
+    $('#whatsNewDot').classList.toggle('hidden', seen === CHANGELOG_VERSION);
+  }
+
+  /* ============================================================
      SETTINGS  (custom quotes · cache reset · erase data · install)
      ============================================================ */
   function renderSettings() {
@@ -1932,7 +1984,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); closeChangelog(); }
     });
 
     // --- Drag & drop ---
@@ -2022,6 +2074,11 @@
     $('#renameProjectClose').addEventListener('click', closeRenameProject);
     $('#renameProjectOverlay').addEventListener('click', closeRenameProject);
 
+    // --- What's new (changelog) ---
+    $('#whatsNewBtn').addEventListener('click', openChangelog);
+    $('#changelogClose').addEventListener('click', closeChangelog);
+    $('#changelogOverlay').addEventListener('click', closeChangelog);
+
     // --- Notifications ---
     $('#notifBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleNotifPanel(); });
     $('#notifEnablePush').addEventListener('click', enablePushReminders);
@@ -2090,6 +2147,9 @@
     quoteIdx = Math.floor(Date.now() / 300000) % QUOTES.length;
     renderQuote();
     setInterval(rotateQuote, 300000);
+
+    // Show a dot on "What's new" if there's an unseen release.
+    syncWhatsNewDot();
 
     // Deadline reminders: browser notifications (if allowed) + badge refresh.
     syncPushBtn();

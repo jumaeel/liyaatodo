@@ -679,6 +679,31 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 }
 .today-slot:hover { border-color: #c2c8fa; color: #5b6cf2; background: #eef0fe; }
 
+/* ===== Changelog ("What's new") ===== */
+#changelogList { position: relative; }
+#changelogList::before {
+  content: ""; position: absolute; left: 4px; top: .5rem; bottom: .5rem;
+  width: 3px; border-radius: 3px; background: #5b6cf2;
+}
+.cl-entry { position: relative; padding: 0 0 1.25rem 1.4rem; }
+.cl-entry:last-child { padding-bottom: .25rem; }
+.cl-tag {
+  display: inline-block;
+  font-size: .72rem; font-weight: 700; color: #fff;
+  padding: .15rem .6rem; border-radius: 999px;
+  margin-bottom: .4rem;
+}
+.cl-feature     { background: #4f67f5; }
+.cl-improvement { background: #a855f7; }
+.cl-fix         { background: #10b981; }
+.cl-body { font-size: .9rem; line-height: 1.5; }
+.cl-head { font-weight: 700; color: #1e293b; }
+.cl-desc { color: #94a3b8; }
+
+.dark #changelogList::before { background: #6b78f7; }
+.dark .cl-head { color: #e2e8f0; }
+.dark .cl-desc { color: #94a3b8; }
+
 /* Settings section labels */
 .settings-label {
   font-size: .72rem; font-weight: 700;
