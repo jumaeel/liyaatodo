@@ -14,6 +14,8 @@
     tasks: [],           // { id, projectId, title, priority, deadline, isCompleted, urgent, important }
     activeProjectId: null,
     todayTaskIds: [],    // up to 5 task IDs selected for today
+    todayStamp: null,    // local day key the today list belongs to (yyyy-mm-dd)
+    todayArchive: [],    // past days' summaries { date, total, done }
     user: { name: '' },  // the person using the app
     customQuotes: [],    // user-added motivation quotes { text, source }
     hiddenQuotes: [],    // indices of built-in quotes the user removed
@@ -120,6 +122,8 @@
         tasks: parsed.tasks,
         activeProjectId: parsed.activeProjectId ?? null,
         todayTaskIds: Array.isArray(parsed.todayTaskIds) ? parsed.todayTaskIds : [],
+        todayStamp: typeof parsed.todayStamp === 'string' ? parsed.todayStamp : null,
+        todayArchive: Array.isArray(parsed.todayArchive) ? parsed.todayArchive : [],
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
         customQuotes: Array.isArray(parsed.customQuotes) ? parsed.customQuotes : [],
         hiddenQuotes: Array.isArray(parsed.hiddenQuotes) ? parsed.hiddenQuotes : [],
@@ -153,6 +157,8 @@
 
     if (!Array.isArray(state.customQuotes)) state.customQuotes = [];
     if (!Array.isArray(state.hiddenQuotes)) state.hiddenQuotes = [];
+    if (!Array.isArray(state.todayArchive)) state.todayArchive = [];
+    if (typeof state.todayStamp !== 'string') state.todayStamp = null;
     if (!state.countdown || typeof state.countdown !== 'object') state.countdown = { date: null, label: '' };
   }
 
@@ -320,6 +326,36 @@
 
   /* ---------- Date helpers ---------- */
   const todayStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+
+  // Local calendar key (yyyy-mm-dd) used to detect a new day.
+  function dayKey(d = new Date()) {
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  // At the start of a new local day, archive a summary of Today's Focus and
+  // clear the selection so the day starts fresh. Completed tasks stay marked
+  // done in their own projects — only the daily shortlist resets.
+  // Returns true when state changed (so the caller can save + re-render).
+  function maybeRolloverToday() {
+    const key = dayKey();
+    if (!state.todayStamp) { state.todayStamp = key; return true; } // adopt today on first run
+    if (state.todayStamp === key) return false;
+
+    if (state.todayTaskIds.length) {
+      const done = state.todayTaskIds.reduce((n, id) => {
+        const t = state.tasks.find((x) => x.id === id);
+        return n + (t && t.isCompleted ? 1 : 0);
+      }, 0);
+      if (!Array.isArray(state.todayArchive)) state.todayArchive = [];
+      state.todayArchive.push({ date: state.todayStamp, total: state.todayTaskIds.length, done });
+      if (state.todayArchive.length > 60) state.todayArchive = state.todayArchive.slice(-60);
+    }
+    state.todayTaskIds = [];
+    state.todayStamp = key;
+    return true;
+  }
 
   // ISO yyyy-mm-dd for a date that's `days` from today (default 7 = one week).
   function defaultDeadline(days = 7) {
@@ -837,6 +873,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '2.8', type: 'improvement', title: 'Today’s Focus resets each day',   desc: 'When a new day starts, your Today’s Focus list clears so you pick a fresh shortlist. Completed tasks stay done in their projects.' },
     { v: '2.7', type: 'feature',     title: 'Themes: Ink & Amber + Periwinkle', desc: 'Choose your look in Settings → Appearance — the warm “Ink & Amber” editorial theme or the original cool “Periwinkle”. Both work in light and dark mode.' },
     { v: '2.6', type: 'feature',     title: 'Sort your task list',            desc: 'Sort a project’s tasks by priority, deadline, estimated time, name, or newest.' },
     { v: '2.5', type: 'feature',     title: 'Backup & restore',               desc: 'Export all your data to a file and import it back anytime — perfect for moving devices or keeping a safe copy.' },
@@ -1209,6 +1246,9 @@
 
   /* ---------- Live clock + time remaining today ---------- */
   function updateClock() {
+    // Detect a day rollover while the app stays open (e.g. across midnight).
+    if (maybeRolloverToday()) { save(); render(); }
+
     const t = $('#clockTime');
     if (!t) return;
     const now = new Date();
@@ -2265,6 +2305,11 @@
         if (card) setSkin(card.dataset.skin);
       });
     }
+
+    // --- New-day rollover when the app is reopened/refocused ---
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && maybeRolloverToday()) { save(); render(); }
+    });
   }
 
   const SKIN_META = { amber: '#0f5e57', blue: '#5b6cf2' };
@@ -2318,6 +2363,7 @@
      ============================================================ */
   function init() {
     load();
+    if (maybeRolloverToday()) save(); // start a fresh Today's Focus if the day changed
     bindEvents();
     syncFilterChips();
     applySkinMeta(currentSkin());
