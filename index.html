@@ -695,6 +695,25 @@
                   <p class="gc-text">Up to 5 tasks from any project — your daily shortlist.</p>
                 </button>
 
+                <!-- Card: What's coming up -->
+                <button class="guide-card" data-goto="upcoming">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="30" y="20" width="100" height="64" rx="10" fill="#e6f2f0"/>
+                      <rect x="30" y="20" width="100" height="16" rx="8" fill="#0f5e57"/>
+                      <rect x="46" y="14" width="6" height="12" rx="3" fill="#0c4a45"/>
+                      <rect x="108" y="14" width="6" height="12" rx="3" fill="#0c4a45"/>
+                      <rect x="42" y="48" width="38" height="6" rx="3" fill="#a8d4ce"/>
+                      <rect x="42" y="60" width="30" height="6" rx="3" fill="#a8d4ce"/>
+                      <rect x="42" y="72" width="34" height="6" rx="3" fill="#d3e8e4"/>
+                      <circle cx="108" cy="64" r="16" fill="#f3a429"/>
+                      <path d="M108 56v8l5 4" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">4 · See what’s coming up</p>
+                  <p class="gc-text">Every deadline across all projects — soonest first.</p>
+                </button>
+
                 <!-- Card: Dashboard -->
                 <button class="guide-card" data-goto="dashboard">
                   <div class="gc-art">
@@ -707,7 +726,7 @@
                       <rect x="38" y="58" width="8" height="18" rx="3" fill="#5fb3a8"/>
                     </svg>
                   </div>
-                  <p class="gc-title">4 · Watch progress</p>
+                  <p class="gc-title">5 · Watch progress</p>
                   <p class="gc-text">Live stats, gauges and per-project bars on the Dashboard.</p>
                 </button>
 
@@ -726,8 +745,24 @@
                       <rect x="88" y="60" width="22" height="5" rx="2.5" fill="#dc2626" opacity=".4"/>
                     </svg>
                   </div>
-                  <p class="gc-title">5 · Prioritise in the Matrix</p>
+                  <p class="gc-title">6 · Prioritise in the Matrix</p>
                   <p class="gc-text">Drag tasks into Do, Schedule, Delegate or Delete.</p>
+                </button>
+
+                <!-- Card: Themes & settings -->
+                <button class="guide-card" data-goto="settings">
+                  <div class="gc-art">
+                    <svg viewBox="0 0 160 100" fill="none" aria-hidden="true">
+                      <rect x="38" y="26" width="48" height="48" rx="12" fill="#0f5e57"/>
+                      <rect x="74" y="32" width="48" height="48" rx="12" fill="#f3a429"/>
+                      <circle cx="98" cy="56" r="11" fill="#fff"/>
+                      <circle cx="98" cy="56" r="4.5" fill="#f3a429"/>
+                      <circle cx="52" cy="40" r="4" fill="#fbc55f"/>
+                      <circle cx="40" cy="68" r="3" fill="#f4517d"/>
+                    </svg>
+                  </div>
+                  <p class="gc-title">7 · Make it yours</p>
+                  <p class="gc-text">Switch themes, add quotes, back up data &amp; more in Settings.</p>
                 </button>
 
                 <!-- Card: Sync -->
@@ -741,7 +776,7 @@
                       <circle cx="34" cy="30" r="3" fill="#f4517d"/>
                     </svg>
                   </div>
-                  <p class="gc-title">6 · Sign in &amp; sync</p>
+                  <p class="gc-title">8 · Sign in &amp; sync</p>
                   <p class="gc-text">Google sign-in saves progress to your account on every device.</p>
                 </button>
 
@@ -756,7 +791,7 @@
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">1</div>
                 <div class="min-w-0">
                   <h3 class="font-extrabold text-slate-900 text-lg">Create &amp; organise projects</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">A <b>project</b> is a folder for related tasks — like <i>Studies</i>, <i>Work</i>, or <i>Errands</i>. Use the <b>“New project…”</b> box at the bottom of the left sidebar, type a name, and hit the <b>+</b> button. Hover a project in the sidebar to <b>rename ✏️</b> it, <b>reorder ▲▼</b> it, or delete it. Click its name to open it — or click the <b>Liyaatodo logo</b> any time to jump back to the Dashboard.</p>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">A <b>project</b> is a folder for related tasks — like <i>Studies</i>, <i>Work</i>, or <i>Errands</i>. Use the <b>“New project…”</b> box at the bottom of the left sidebar, type a name, and hit the <b>+</b> button. Hover a project to <b>rename ✏️</b> it, <b>reorder ▲▼</b> it, or delete it. Click its name to open it — or click the <b>Liyaatodo logo</b> any time to jump back to the Dashboard. The <b>☰ button</b> in the top bar hides or shows the sidebar.</p>
                 </div>
               </div>
 
@@ -764,8 +799,8 @@
               <div class="panel flex gap-4 items-start">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">2</div>
                 <div class="min-w-0">
-                  <h3 class="font-extrabold text-slate-900 text-lg">Add &amp; edit tasks</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open a project and use the <b>Add task</b> form. Give it a title, pick a <b>priority</b> (High / Medium / Low), a <b>deadline</b> (defaults to <b>one week</b> out), and an <b>estimated time</b> (type things like <i>30m</i>, <i>2h</i>, or <i>1h30m</i>). Tag a task <b>★ Important</b> and <b>⚡ Urgent</b> to power the matrix in step 5. Need to change something later? Hit the <b>✏️ pencil</b> on any task to edit every detail. Tick the checkbox when it's done and your progress updates instantly.</p>
+                  <h3 class="font-extrabold text-slate-900 text-lg">Add, label &amp; edit tasks</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open a project and use the <b>Add task</b> form. Give it a title, a <b>priority</b> (High / Medium / Low), a <b>deadline</b> (defaults to <b>one week</b> out), an <b>estimated time</b> (<i>30m</i>, <i>2h</i>, <i>1h30m</i>…), and an optional <b>label</b> (like <i>study</i> or <i>errand</i>) to group similar tasks — click any label chip to filter by it. Tag a task <b>★ Important</b> and <b>⚡ Urgent</b> to power the matrix. Use <b>Sort</b> and the <b>List / Matrix</b> toggle, plus the <b>search</b> box, to find things fast. Hit the <b>✏️ pencil</b> to edit any detail later, and tick the checkbox when it’s done.</p>
                 </div>
               </div>
 
@@ -774,7 +809,7 @@
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">3</div>
                 <div class="min-w-0">
                   <h3 class="font-extrabold text-slate-900 text-lg">Pick your “Today’s Focus”</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open <b>Today’s Focus</b> and choose <b>up to 5 tasks</b> you’ll finish today — pulled from <i>any</i> of your projects (search to find them fast). Ticking one off here also completes it in its original project. The screen has a <b>live clock</b> and a <b>“time left today”</b> countdown, a fresh <b>motivational quote</b> every few minutes, and a <b>⛶ Fullscreen</b> button for a distraction-free focus view.</p>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Open <b>Today’s Focus</b> and choose <b>up to 5 tasks</b> you’ll finish today — pulled from <i>any</i> project (search to find them fast). Ticking one off here also completes it in its project. You get a <b>live clock</b>, a <b>“time left today”</b> bar, a custom <b>day countdown</b> (to an exam, trip or Eid), a fresh <b>quote</b> every few minutes, and a <b>⛶ Fullscreen</b> focus mode. Each <b>new day the list resets</b> so you start fresh — finished tasks stay done in their projects.</p>
                 </div>
               </div>
 
@@ -782,8 +817,8 @@
               <div class="panel flex gap-4 items-start">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">4</div>
                 <div class="min-w-0">
-                  <h3 class="font-extrabold text-slate-900 text-lg">Watch your progress</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">The <b>Dashboard</b> is your command centre: total / completed / active / overdue counts, an overall completion gauge, a bar for every project (with its total estimated time), and a priority breakdown. The <b>Focus Matrix</b> here spells out exactly what’s important &amp; urgent for you and lists those tasks — tap one to jump straight to its project. Everything updates live as you check tasks off.</p>
+                  <h3 class="font-extrabold text-slate-900 text-lg">See what’s coming up</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">The <b>What’s coming up</b> screen gathers <b>every task that has a deadline</b> from all your projects and lists them <b>soonest first</b>, grouped into <b>Overdue</b>, <b>Due today</b>, <b>Tomorrow</b>, <b>Next 7 days</b> and <b>Later</b>. Tick one to complete it, hit the <b>✏️ pencil</b> to edit, or tap a row to jump to its project. The sidebar shows a <b>red badge</b> when anything’s overdue.</p>
                 </div>
               </div>
 
@@ -791,8 +826,8 @@
               <div class="panel flex gap-4 items-start">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">5</div>
                 <div class="min-w-0">
-                  <h3 class="font-extrabold text-slate-900 text-lg">Prioritise with the Matrix</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Inside a project, switch from <b>List</b> to <b>Matrix</b> view to see the <b>Eisenhower Matrix</b>: four boxes — <b>Do</b> (important &amp; urgent), <b>Schedule</b>, <b>Delegate</b>, and <b>Delete</b>. <b>Drag a task</b> into a box to set its importance/urgency. It’s the fastest way to decide what actually deserves your attention.</p>
+                  <h3 class="font-extrabold text-slate-900 text-lg">Watch your progress</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">The <b>Dashboard</b> is your command centre: total / completed / active / overdue counts, an overall completion gauge, a bar for every project (with its total estimated time), and a priority breakdown. The <b>Focus Matrix</b> here spells out exactly what’s important &amp; urgent for you and lists those tasks — tap one to jump straight to its project. Everything updates live as you check tasks off.</p>
                 </div>
               </div>
 
@@ -800,8 +835,26 @@
               <div class="panel flex gap-4 items-start">
                 <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">6</div>
                 <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Prioritise with the Matrix</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Inside a project, switch from <b>List</b> to <b>Matrix</b> view to see the <b>Eisenhower Matrix</b>: four boxes — <b>Do</b> (important &amp; urgent), <b>Schedule</b>, <b>Delegate</b>, and <b>Delete</b>. <b>Drag a task</b> into a box to set its importance/urgency. It’s the fastest way to decide what actually deserves your attention.</p>
+                </div>
+              </div>
+
+              <!-- Step 7 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">7</div>
+                <div class="min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-lg">Make it yours</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">In <b>Settings</b> you can switch <b>theme</b> — warm <i>Ink &amp; Amber</i> or cool <i>Periwinkle</i> — and the <b>🌙 / ☀️ button</b> in the top bar flips <b>dark / light</b>. Add your own <b>motivation quotes</b> and manage the whole library, <b>back up</b> everything to a file (and import it back), reset the app cache, or erase data by scope. The <b>🔔 bell</b> gives overdue and due-soon <b>reminders</b> (with optional browser notifications), and you can <b>install Liyaatodo as an app</b> for an offline, full-screen experience. The <b>🎁 What’s new</b> button shows the latest changes.</p>
+                </div>
+              </div>
+
+              <!-- Step 8 -->
+              <div class="panel flex gap-4 items-start">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white grid place-items-center font-extrabold text-lg">8</div>
+                <div class="min-w-0">
                   <h3 class="font-extrabold text-slate-900 text-lg">Sign in to save &amp; sync</h3>
-                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Tap your <b>avatar</b> (top-right) → <b>Account &amp; sync</b> → <b>Continue with Google</b>. Once signed in, everything saves to your account automatically and <b>syncs across all your devices</b> — finish a task on your phone and it’s updated on your laptop. Signed out, your data still saves in this browser.</p>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">Tap your <b>avatar</b> (top-right) → <b>Account &amp; sync</b> → <b>Continue with Google</b>. Your <b>Google profile picture</b> appears in the top bar, everything saves to your account automatically, and it <b>syncs across all your devices</b> — finish a task on your phone and it’s updated on your laptop. Signed out, your data still saves in this browser.</p>
                 </div>
               </div>
 
@@ -872,13 +925,14 @@
             <div class="panel">
               <div class="panel-head"><span class="panel-title">Handy to know</span></div>
               <ul class="space-y-2.5 text-sm text-slate-600">
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>The <b>search</b> bar appears inside a project and filters that project’s tasks live.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Edit any task with the <b>✏️ pencil</b> — that’s also how you add a time estimate to older tasks.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Hover a project in the sidebar to <b>rename</b>, <b>move ▲▼</b>, or delete it. Click the <b>logo</b> to return to the Dashboard.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Add a <b>time estimate</b> to any task and Liyaatodo totals up how much work each project needs.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Today’s Focus</b> has a live clock, a <b>time-left-today</b> countdown, rotating quotes, and a <b>⛶ Fullscreen</b> focus mode.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Use the <b>🌙 / ☀️ button</b> in the top bar to switch between <b>dark and light mode</b>.</span></li>
-                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Works <b>offline</b> and is installable as an app; <b>overdue</b> tasks are flagged in red. Deleting a project removes its tasks (you’ll confirm first).</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Labels</b> group similar tasks — give tasks the same label, then click any label chip to filter by it.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Sort</b> a project’s tasks by priority, deadline, estimated time, name or newest, and use <b>search</b> to filter live.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>What’s coming up</b> lists every deadline across all projects, soonest first — the sidebar badge turns red when something’s overdue.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Pick your look in <b>Settings → Appearance</b> — <i>Ink &amp; Amber</i> or <i>Periwinkle</i> — and flip <b>dark / light</b> with the 🌙 / ☀️ button.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Today’s Focus</b> resets every new day; it has a live clock, time-left bar, a custom day countdown, rotating quotes and a <b>⛶ Fullscreen</b> mode.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>The <b>🔔 bell</b> sends overdue &amp; due-soon reminders (with optional browser notifications); <b>“mark all read”</b> clears them.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span><b>Back up</b> all your data to a file and import it back from <b>Settings</b> — handy when moving devices.</span></li>
+                <li class="flex gap-2.5"><span class="dot bg-indigo-500 mt-1.5"></span><span>Works <b>offline</b>, installs as an app, and (signed in) syncs across devices. The <b>🎁 What’s new</b> button shows the latest updates.</span></li>
               </ul>
             </div>
 
