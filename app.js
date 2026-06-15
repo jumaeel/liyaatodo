@@ -396,11 +396,13 @@
     screen = name;
     $('#dashboardScreen').classList.toggle('hidden', name !== 'dashboard');
     $('#todayScreen').classList.toggle('hidden', name !== 'today');
+    $('#upcomingScreen').classList.toggle('hidden', name !== 'upcoming');
     $('#projectScreen').classList.toggle('hidden', name !== 'project');
     $('#guideScreen').classList.toggle('hidden', name !== 'guide');
     $('#settingsScreen').classList.toggle('hidden', name !== 'settings');
     $('#dashboardNav').classList.toggle('is-active', name === 'dashboard');
     $('#todayNav').classList.toggle('is-active', name === 'today');
+    $('#upcomingNav').classList.toggle('is-active', name === 'upcoming');
     $('#guideNav').classList.toggle('is-active', name === 'guide');
     $('#settingsNav').classList.toggle('is-active', name === 'settings');
 
@@ -422,8 +424,10 @@
     renderUser();
     renderSidebar();
     renderNotifs();
+    updateUpcomingBadge();
     if (screen === 'dashboard') renderDashboard();
     if (screen === 'today') renderToday();
+    if (screen === 'upcoming') renderUpcoming();
     if (screen === 'settings') renderSettings();
     if (screen === 'project') {
       renderHeader();
@@ -873,6 +877,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '2.9', type: 'feature',     title: '“What’s coming up” deadlines',    desc: 'A new screen lists every task with a deadline across all your projects — grouped by overdue, today, tomorrow and the week ahead, soonest first.' },
     { v: '2.8', type: 'improvement', title: 'Today’s Focus resets each day',   desc: 'When a new day starts, your Today’s Focus list clears so you pick a fresh shortlist. Completed tasks stay done in their projects.' },
     { v: '2.7', type: 'feature',     title: 'Themes: Ink & Amber + Periwinkle', desc: 'Choose your look in Settings → Appearance — the warm “Ink & Amber” editorial theme or the original cool “Periwinkle”. Both work in light and dark mode.' },
     { v: '2.6', type: 'feature',     title: 'Sort your task list',            desc: 'Sort a project’s tasks by priority, deadline, estimated time, name, or newest.' },
@@ -1785,6 +1790,138 @@
     renderView();
   }
 
+  /* ============================================================
+     UPCOMING · deadlines across every project, soonest first
+     ============================================================ */
+
+  // Whole days from today to an ISO date (negative = overdue).
+  function daysUntil(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    return Math.round((d - todayStart()) / 86400000);
+  }
+
+  // Bucket an incomplete, dated task into a deadline group.
+  const UPCOMING_GROUPS = [
+    { key: 'overdue',  label: 'Overdue',     tone: 'danger', match: (n) => n < 0 },
+    { key: 'today',    label: 'Due today',   tone: 'accent', match: (n) => n === 0 },
+    { key: 'tomorrow', label: 'Tomorrow',    tone: 'primary', match: (n) => n === 1 },
+    { key: 'week',     label: 'Next 7 days', tone: 'primary', match: (n) => n >= 2 && n <= 7 },
+    { key: 'later',    label: 'Later',       tone: 'muted',  match: (n) => n > 7 },
+  ];
+
+  function dueLabel(n) {
+    if (n < 0)  return `${Math.abs(n)} day${Math.abs(n) === 1 ? '' : 's'} ago`;
+    if (n === 0) return 'Today';
+    if (n === 1) return 'Tomorrow';
+    return `in ${n} days`;
+  }
+
+  // Count of overdue + due-soon tasks, used for the sidebar badge.
+  function upcomingCounts() {
+    let overdue = 0, soon = 0;
+    state.tasks.forEach((t) => {
+      if (t.isCompleted || !t.deadline) return;
+      const n = daysUntil(t.deadline);
+      if (n < 0) overdue++;
+      else if (n <= 7) soon++;
+    });
+    return { overdue, soon };
+  }
+
+  function updateUpcomingBadge() {
+    const badge = $('#upcomingBadge');
+    if (!badge) return;
+    const { overdue, soon } = upcomingCounts();
+    if (overdue > 0) {
+      badge.textContent = overdue;
+      badge.className = 'ml-auto text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full';
+    } else if (soon > 0) {
+      badge.textContent = soon;
+      badge.className = 'ml-auto text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full';
+    } else {
+      badge.className = 'ml-auto text-xs font-bold px-2 py-0.5 rounded-full hidden';
+    }
+  }
+
+  function renderUpcoming() {
+    const listEl = $('#upcomingList');
+    const emptyEl = $('#upcomingEmpty');
+    const noDateEl = $('#upcomingNoDate');
+    const statsEl = $('#upcomingStats');
+    if (!listEl) return;
+
+    const prRank = { High: 0, Medium: 1, Low: 2 };
+    const dated = state.tasks
+      .filter((t) => !t.isCompleted && t.deadline)
+      .sort((a, b) => a.deadline.localeCompare(b.deadline) || (prRank[a.priority] - prRank[b.priority]));
+
+    const noDeadline = state.tasks.filter((t) => !t.isCompleted && !t.deadline).length;
+
+    // Header stat chips
+    const { overdue, soon } = upcomingCounts();
+    const chips = [];
+    if (overdue > 0) chips.push(`<span class="px-2.5 py-1 rounded-full bg-red-100 text-red-600">${overdue} overdue</span>`);
+    if (soon > 0) chips.push(`<span class="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">${soon} due soon</span>`);
+    statsEl.innerHTML = chips.join('');
+
+    if (dated.length === 0) {
+      emptyEl.classList.remove('hidden');
+      listEl.innerHTML = '';
+    } else {
+      emptyEl.classList.add('hidden');
+      const groups = UPCOMING_GROUPS.map((g) => ({ ...g, items: [] }));
+      dated.forEach((t) => {
+        const n = daysUntil(t.deadline);
+        (groups.find((g) => g.match(n)) || groups[groups.length - 1]).items.push({ t, n });
+      });
+
+      listEl.innerHTML = groups
+        .filter((g) => g.items.length)
+        .map((g) => {
+          const rows = g.items.map(({ t, n }) => {
+            const proj = state.projects.find((p) => p.id === t.projectId);
+            const overdueRow = n < 0;
+            return `
+              <div class="task-row pr-${t.priority} up-row" data-id="${t.id}">
+                <input type="checkbox" class="task-check" data-action="upcoming-toggle" aria-label="Complete task" />
+                <div class="min-w-0 flex-1">
+                  <p class="task-title">${escapeHTML(t.title)}</p>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span class="badge badge-${t.priority}">${t.priority}</span>
+                    ${labelChip(t)}
+                    ${estBadge(t)}
+                    <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
+                  </div>
+                </div>
+                <div class="up-due ${overdueRow ? 'is-overdue' : ''}">
+                  <span class="up-due-rel">${dueLabel(n)}</span>
+                  <span class="up-due-date">${escapeHTML(formatDate(t.deadline))}</span>
+                </div>
+                <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
+                  <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </button>
+              </div>`;
+          }).join('');
+          return `
+            <section>
+              <div class="up-group-head">
+                <span class="up-dot up-${g.tone}"></span>
+                <h3 class="up-group-title">${g.label}</h3>
+                <span class="up-group-count">${g.items.length}</span>
+              </div>
+              <div class="space-y-2.5">${rows}</div>
+            </section>`;
+        }).join('');
+    }
+
+    if (noDeadline > 0) {
+      noDateEl.classList.remove('hidden');
+      noDateEl.textContent = `${noDeadline} task${noDeadline === 1 ? '' : 's'} across your projects ${noDeadline === 1 ? 'has' : 'have'} no deadline.`;
+    } else {
+      noDateEl.classList.add('hidden');
+    }
+  }
+
   function selectProject(id) {
     state.activeProjectId = id;
     filter = 'all';
@@ -2000,6 +2137,7 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchScreen('dashboard'); render(); }
     });
     $('#todayNav').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
+    $('#upcomingNav').addEventListener('click', () => { switchScreen('upcoming'); renderUpcoming(); renderSidebar(); });
     $('#guideNav').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
     $('#guideStartBtn').addEventListener('click', () => { switchScreen('dashboard'); render(); });
     $('#settingsNav').addEventListener('click', () => { switchScreen('settings'); renderSettings(); renderSidebar(); });
@@ -2158,6 +2296,26 @@
         const task = state.tasks.find((t) => t.id === id);
         if (task) { state.activeProjectId = task.projectId; setLabelFilter(action.dataset.label); }
       }
+    });
+
+    // --- Upcoming screen task interactions ---
+    $('#upcomingList').addEventListener('click', (e) => {
+      const row = e.target.closest('.task-row');
+      if (!row) return;
+      const id = row.dataset.id;
+      const action = e.target.closest('[data-action]');
+      if (action) {
+        if (action.dataset.action === 'upcoming-toggle') { toggleTask(id); return; }
+        if (action.dataset.action === 'edit') { openEditTask(id); return; }
+        if (action.dataset.action === 'filter-label') {
+          const task = state.tasks.find((t) => t.id === id);
+          if (task) { state.activeProjectId = task.projectId; setLabelFilter(action.dataset.label); }
+          return;
+        }
+      }
+      // Click elsewhere on the row → open the task's project.
+      const task = state.tasks.find((t) => t.id === id);
+      if (task) selectProject(task.projectId);
     });
 
     // --- Today: day countdown ---
