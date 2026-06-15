@@ -708,3 +708,130 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 .dark[data-theme="blue"] .notif-row .bg-blue-50 { background: rgba(59,130,246,.16) !important; }
 .dark[data-theme="blue"] .notif-row .bg-indigo-50 { background: rgba(99,102,241,.18) !important; }
 .dark[data-theme="blue"] .notif-row .bg-green-50 { background: rgba(34,197,94,.15) !important; }
+
+/* ============================================================
+   LANDING (first-visit conversion overlay)
+   Full-screen, theme-aware, hidden once the user has started.
+   ============================================================ */
+#landing {
+  position: fixed; inset: 0; z-index: 70;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background-color: var(--app-bg-color);
+  background-image: var(--app-bg-image);
+  color: var(--ink);
+}
+html.started #landing { display: none; }
+
+.lp { min-height: 100%; display: flex; flex-direction: column; }
+
+/* Nav */
+.lp-nav {
+  width: 100%; max-width: 1120px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.1rem clamp(1rem, 4vw, 3rem);
+}
+.lp-brand { display: flex; align-items: center; gap: .6rem; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; color: var(--ink); letter-spacing: -.01em; }
+.lp-nav-actions { display: flex; align-items: center; gap: .9rem; }
+.lp-link { color: var(--ink-soft); font-weight: 600; font-size: .9rem; }
+.lp-link:hover { color: var(--primary-text); }
+
+/* Buttons */
+.lp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary); color: #fff; border-radius: 12px;
+  font-weight: 700; padding: .85rem 1.35rem; font-size: .9rem;
+  box-shadow: 0 10px 24px -10px rgba(0,0,0,.4);
+}
+.lp-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.lp-btn-sm { padding: .5rem 1rem; font-size: .85rem; }
+.lp-btn-lg { padding: .95rem 1.6rem; font-size: 1rem; }
+.lp-btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface); color: var(--primary-soft-text);
+  border: 1px solid var(--border); border-radius: 12px; font-weight: 700;
+  padding: .95rem 1.6rem; font-size: 1rem;
+}
+.lp-btn-ghost:hover { border-color: var(--primary-soft-bd); transform: translateY(-1px); }
+
+/* Hero */
+.lp-hero {
+  width: 100%; max-width: 1120px; margin: 0 auto; box-sizing: border-box;
+  display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center;
+  padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+}
+@media (min-width: 900px) { .lp-hero { grid-template-columns: 1.05fr .95fr; } }
+.lp-eyebrow {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--primary-soft-text); background: var(--primary-soft);
+  border: 1px solid var(--primary-soft-bd); padding: .3rem .8rem; border-radius: 999px;
+}
+.lp-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.3rem, 5.5vw, 3.7rem); line-height: 1.04;
+  letter-spacing: -.025em; color: var(--ink); margin-top: 1.1rem;
+}
+.lp-accent { color: var(--accent-text); }
+.lp-sub { margin-top: 1.1rem; font-size: clamp(1rem, 1.5vw, 1.15rem); color: var(--muted); line-height: 1.6; max-width: 34rem; }
+.lp-cta { margin-top: 1.7rem; display: flex; gap: .8rem; flex-wrap: wrap; }
+.lp-trust { margin-top: 1.1rem; font-size: .8rem; color: var(--faint); font-weight: 600; }
+
+/* Product preview mock */
+.lp-hero-art { display: flex; justify-content: center; }
+.lp-mock {
+  width: 100%; max-width: 380px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 1.2rem;
+  box-shadow: 0 30px 60px -28px rgba(0,0,0,.35), var(--card-shadow);
+  transform: rotate(1.5deg);
+}
+@media (min-width: 900px) { .lp-mock { transform: rotate(2deg); } }
+.lp-mock-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.lp-mock-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+.lp-ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: conic-gradient(var(--primary) 60%, var(--primary-soft) 0);
+  display: grid; place-items: center;
+}
+.lp-ring span { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: .72rem; font-weight: 800; color: var(--ink); }
+.lp-mrow { display: flex; align-items: center; gap: .65rem; padding: .6rem .15rem; border-bottom: 1px solid var(--border-soft); }
+.lp-mrow:last-of-type { border-bottom: none; }
+.lp-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--faint); flex-shrink: 0; display: grid; place-items: center; font-size: .7rem; color: transparent; }
+.lp-check.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.lp-mtext { font-size: .88rem; color: var(--ink); }
+.lp-mrow.done .lp-mtext { text-decoration: line-through; color: var(--faint); }
+.lp-badge { margin-left: auto; font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; flex-shrink: 0; }
+.lp-mbar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 1rem; }
+.lp-mbar i { display: block; height: 100%; border-radius: 999px; background: var(--primary-grad); }
+.lp-mock-foot { font-size: .75rem; color: var(--muted); font-weight: 600; margin-top: .6rem; }
+
+/* Sections */
+.lp-section { width: 100%; max-width: 1120px; margin: 0 auto; box-sizing: border-box; padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 3rem); }
+.lp-h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.6rem, 3.6vw, 2.5rem); letter-spacing: -.02em; color: var(--ink); text-align: center; }
+.lp-h2-sub { text-align: center; color: var(--muted); margin: .7rem auto 0; max-width: 38rem; line-height: 1.55; }
+
+/* Feature grid */
+.lp-grid { margin-top: 2.2rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)); }
+.lp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.4rem; box-shadow: var(--card-shadow); transition: transform .2s, box-shadow .2s, border-color .2s; }
+.lp-card:hover { transform: translateY(-3px); border-color: var(--primary-soft-bd); box-shadow: 0 18px 36px -18px rgba(0,0,0,.28); }
+.lp-ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 1.45rem; background: var(--primary-soft); }
+.lp-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.12rem; color: var(--ink); margin-top: .9rem; }
+.lp-card p { color: var(--muted); font-size: .9rem; line-height: 1.55; margin-top: .35rem; }
+
+/* Steps */
+.lp-steps { margin-top: 2.2rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.lp-step { text-align: center; padding: 1rem .5rem; }
+.lp-step-n { width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; display: grid; place-items: center; margin: 0 auto .8rem; }
+.lp-step h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+.lp-step p { color: var(--muted); font-size: .88rem; line-height: 1.5; margin-top: .3rem; max-width: 17rem; margin-inline: auto; }
+
+/* Final CTA band */
+.lp-final { background: var(--hero-grad); color: #fff; border-radius: 24px; padding: clamp(2rem, 5vw, 3.6rem); text-align: center; box-shadow: var(--hero-shadow); }
+.lp-final h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.6rem, 3.6vw, 2.5rem); letter-spacing: -.02em; color: #fff; }
+.lp-final > p { color: rgba(255,255,255,.82); margin: .8rem auto 0; max-width: 34rem; line-height: 1.55; }
+.lp-final .lp-btn { background: #fff; color: var(--primary); box-shadow: 0 12px 28px -10px rgba(0,0,0,.5); }
+.lp-final .lp-btn:hover { background: #fff; filter: brightness(1); transform: translateY(-1px); }
+.lp-final .lp-trust { color: rgba(255,255,255,.7); }
+
+/* Footer */
+.lp-foot { margin-top: auto; text-align: center; color: var(--faint); font-size: .82rem; padding: 2.5rem 1rem 3rem; }

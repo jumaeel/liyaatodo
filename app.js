@@ -258,6 +258,7 @@
     if (Cloud.unsub) { Cloud.unsub(); Cloud.unsub = null; }
 
     if (user) {
+      markStarted(); // signed-in users have already started — never show the landing
       // Adopt the Google first name if the user hasn't set their own.
       if (!state.user.name && user.displayName) {
         state.user.name = user.displayName.split(/\s+/)[0] || user.displayName;
@@ -422,6 +423,18 @@
   /* ============================================================
      SCREEN SWITCHING
      ============================================================ */
+
+  /* ---------- Landing (first-visit overlay) ---------- */
+  function markStarted() {
+    try { localStorage.setItem('liyaa.started', '1'); } catch {}
+    document.documentElement.classList.add('started');
+  }
+  function startUsing() {
+    markStarted();
+    const first = state.projects[0];
+    if (first) selectProject(first.id);
+    setTimeout(() => { const ti = $('#taskTitle'); if (ti) ti.focus(); }, 60);
+  }
 
   function switchScreen(name) {
     screen = name;
@@ -2521,6 +2534,16 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && maybeRolloverToday()) { save(); render(); }
     });
+
+    // --- Landing CTAs ---
+    ['#lpStart', '#lpStart2', '#lpStartTop'].forEach((sel) => {
+      const el = $(sel);
+      if (el) el.addEventListener('click', startUsing);
+    });
+    const lpTour = $('#lpTour');
+    if (lpTour) lpTour.addEventListener('click', () => { markStarted(); switchScreen('guide'); renderSidebar(); });
+    const lpSignIn = $('#lpSignIn');
+    if (lpSignIn) lpSignIn.addEventListener('click', cloudSignIn);
   }
 
   const SKIN_META = { amber: '#0f5e57', blue: '#5b6cf2' };
@@ -2575,6 +2598,7 @@
   function init() {
     load();
     if (maybeRolloverToday()) save(); // start a fresh Today's Focus if the day changed
+    if (state.tasks.length > 0) markStarted(); // existing users skip the landing
     bindEvents();
     syncFilterChips();
     applySkinMeta(currentSkin());

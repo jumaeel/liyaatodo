@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f5e57" />
-  <title>Liyaatodo · Daily Progress Dashboard</title>
+  <title>Liyaatodo · Turn daily chaos into clear progress</title>
+  <meta name="description" content="Liyaatodo is a calm, focused task dashboard. Capture everything, decide what truly matters with the Eisenhower method, and watch real progress build — one focused day at a time. Free, works offline, no sign-up needed." />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="logo-mark.svg" type="image/svg+xml" />
 
@@ -45,6 +46,13 @@
         if (t === 'dark' || (!t && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
+        // Skip the landing for anyone who has already started (flag set, or has tasks saved).
+        var started = localStorage.getItem('liyaa.started');
+        if (!started) {
+          var raw = localStorage.getItem('momentum.state.v1');
+          if (raw) { var st = JSON.parse(raw); if (st && st.tasks && st.tasks.length) started = '1'; }
+        }
+        if (started) document.documentElement.classList.add('started');
       } catch (e) {}
     })();
   </script>
@@ -56,6 +64,105 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="h-full app-bg text-slate-800 font-sans antialiased">
+
+  <!-- ============ LANDING (first-visit overlay) ============ -->
+  <div id="landing" role="region" aria-label="Welcome to Liyaatodo">
+    <div class="lp">
+
+      <!-- Nav -->
+      <nav class="lp-nav">
+        <div class="lp-brand">
+          <svg class="w-9 h-9 shrink-0" viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="lpPad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fdfaf2"/><stop offset="100%" stop-color="#f1e8d6"/></linearGradient>
+              <linearGradient id="lpPencil" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fbc55f"/><stop offset="100%" stop-color="#f3a429"/></linearGradient>
+            </defs>
+            <rect class="lg-edge" x="16" y="26" width="84" height="86" rx="22"/>
+            <rect x="14" y="18" width="84" height="86" rx="22" fill="url(#lpPad)"/>
+            <g fill="none" stroke-linecap="round">
+              <path d="M23 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/><path d="M45 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/><path d="M67 27a8.5 8.5 0 0 1 17 0" stroke="#1c1a17" stroke-width="8"/>
+            </g>
+            <rect class="lg-check" x="24" y="44" width="16" height="16" rx="5"/><path d="M28 52l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="48" width="30" height="7" rx="3.5" fill="#dccfb6"/>
+            <rect class="lg-check" x="24" y="66" width="16" height="16" rx="5"/><path d="M28 74l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="70" width="26" height="7" rx="3.5" fill="#dccfb6"/>
+            <rect class="lg-check" x="24" y="88" width="16" height="16" rx="5"/><path d="M28 96l3 3 5.5-6.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="48" y="92" width="20" height="7" rx="3.5" fill="#dccfb6"/>
+            <g transform="rotate(45 86 40)"><rect x="77" y="12" width="18" height="15" rx="5" fill="#f4517d"/><rect x="77" y="27" width="18" height="6" fill="#fffaf0"/><rect x="77" y="33" width="18" height="46" fill="url(#lpPencil)"/><rect x="83.5" y="33" width="5" height="46" fill="#fdd98f"/><path d="M77 79h18l-9 17z" fill="#f0d6a3"/><path d="M82.5 90l3.5-6.5 3.5 6.5-3.5 6z" fill="#2b2f45"/></g>
+          </svg>
+          <span>Liyaa<span class="wordmark">todo</span></span>
+        </div>
+        <div class="lp-nav-actions">
+          <button id="lpSignIn" type="button" class="lp-link">Sign in</button>
+          <button id="lpStartTop" type="button" class="lp-btn lp-btn-sm">Start free</button>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <section class="lp-hero">
+        <div class="lp-hero-copy">
+          <span class="lp-eyebrow">Your day, finally under control</span>
+          <h1 class="lp-title">Turn daily chaos into <span class="lp-accent">clear progress</span>.</h1>
+          <p class="lp-sub">Liyaatodo is a calm, focused task dashboard. Capture everything on your mind, decide what truly matters with the Eisenhower method, and watch real progress build across all your projects — one focused day at a time.</p>
+          <div class="lp-cta">
+            <button id="lpStart" type="button" class="lp-btn lp-btn-lg">Start now — it’s free</button>
+            <button id="lpTour" type="button" class="lp-btn-ghost lp-btn-lg">See how it works</button>
+          </div>
+          <p class="lp-trust">No sign-up needed · Works offline · Free forever</p>
+        </div>
+
+        <!-- Product preview mock -->
+        <div class="lp-hero-art" aria-hidden="true">
+          <div class="lp-mock">
+            <div class="lp-mock-head">
+              <span class="lp-mock-title">Today’s Focus</span>
+              <span class="lp-ring"><span>60%</span></span>
+            </div>
+            <div class="lp-mrow done"><span class="lp-check on">✓</span><span class="lp-mtext">Finish project proposal</span><span class="lp-badge" style="background:var(--pr-high-soft);color:var(--pr-high-text)">High</span></div>
+            <div class="lp-mrow done"><span class="lp-check on">✓</span><span class="lp-mtext">Revise for exam</span><span class="lp-badge" style="background:var(--pr-med-soft);color:var(--pr-med-text)">Med</span></div>
+            <div class="lp-mrow done"><span class="lp-check on">✓</span><span class="lp-mtext">Reply to emails</span><span class="lp-badge" style="background:var(--pr-low-soft);color:var(--pr-low-text)">Low</span></div>
+            <div class="lp-mrow"><span class="lp-check"></span><span class="lp-mtext">Gym session</span><span class="lp-badge" style="background:var(--pr-med-soft);color:var(--pr-med-text)">Med</span></div>
+            <div class="lp-mrow"><span class="lp-check"></span><span class="lp-mtext">Call family</span><span class="lp-badge" style="background:var(--pr-low-soft);color:var(--pr-low-text)">Low</span></div>
+            <div class="lp-mbar"><i style="width:60%"></i></div>
+            <p class="lp-mock-foot">3 of 5 done today — keep going!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="lp-section">
+        <h2 class="lp-h2">Everything you need to actually get things done</h2>
+        <p class="lp-h2-sub">Not another endless to-do list — a system that helps you decide, focus, and finish.</p>
+        <div class="lp-grid">
+          <div class="lp-card"><div class="lp-ico">✅</div><h3>Today’s Focus</h3><p>Pull up to 5 tasks from any project into one daily shortlist. It resets each morning so every day starts clear.</p></div>
+          <div class="lp-card"><div class="lp-ico">🎯</div><h3>Eisenhower Matrix</h3><p>Sort tasks by important vs urgent and instantly see what to <i>do</i>, schedule, delegate or drop.</p></div>
+          <div class="lp-card"><div class="lp-ico">📅</div><h3>What’s coming up</h3><p>Every deadline across all your projects in one place, soonest first — so nothing ever slips through.</p></div>
+          <div class="lp-card"><div class="lp-ico">📊</div><h3>Real progress</h3><p>Live gauges, per-project bars and streaks turn quiet effort into visible momentum you can feel.</p></div>
+          <div class="lp-card"><div class="lp-ico">☁️</div><h3>Syncs everywhere</h3><p>Sign in with Google and your tasks follow you across phone, tablet and laptop — automatically.</p></div>
+          <div class="lp-card"><div class="lp-ico">🌙</div><h3>Yours, your way</h3><p>Two beautiful themes, dark mode, motivating quotes, and an installable app that works fully offline.</p></div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="lp-section">
+        <h2 class="lp-h2">Up and running in 60 seconds</h2>
+        <div class="lp-steps">
+          <div class="lp-step"><div class="lp-step-n">1</div><h3>Add your tasks</h3><p>Drop in everything on your mind — with a priority, deadline and estimate.</p></div>
+          <div class="lp-step"><div class="lp-step-n">2</div><h3>Pick today’s 5</h3><p>Choose the handful that actually matter today and tune out the rest.</p></div>
+          <div class="lp-step"><div class="lp-step-n">3</div><h3>Watch it build</h3><p>Tick them off and watch your progress climb across every project.</p></div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="lp-section">
+        <div class="lp-final">
+          <h2>Start your first focused day today.</h2>
+          <p>Free, private, and ready in seconds. Your data stays in your browser until you choose to sign in.</p>
+          <button id="lpStart2" type="button" class="lp-btn lp-btn-lg">Get started — it’s free</button>
+          <p class="lp-trust">No account required to begin</p>
+        </div>
+      </section>
+
+      <footer class="lp-foot">Liyaatodo — a calm place to make daily progress. Built for focus. 🤍</footer>
+    </div>
+  </div>
 
   <div class="flex h-full overflow-hidden">
 
