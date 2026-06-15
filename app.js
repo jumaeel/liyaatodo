@@ -464,19 +464,25 @@
      RENDERING
      ============================================================ */
 
+  // Run a render step in isolation: if one throws it's logged, but the rest
+  // (including the active screen) still render.
+  function safeCall(fn) {
+    try { fn(); } catch (e) { console.error('render step failed:', fn && fn.name, e); }
+  }
+
   function render() {
-    renderUser();
-    renderSidebar();
-    renderNotifs();
-    updateUpcomingBadge();
-    if (screen === 'dashboard') renderDashboard();
-    if (screen === 'today') renderToday();
-    if (screen === 'upcoming') renderUpcoming();
-    if (screen === 'settings') renderSettings();
+    safeCall(renderUser);
+    safeCall(renderSidebar);
+    safeCall(renderNotifs);
+    safeCall(updateUpcomingBadge);
+    if (screen === 'dashboard') safeCall(renderDashboard);
+    if (screen === 'today') safeCall(renderToday);
+    if (screen === 'upcoming') safeCall(renderUpcoming);
+    if (screen === 'settings') safeCall(renderSettings);
     if (screen === 'project') {
-      renderHeader();
-      renderProgress();
-      renderView();
+      safeCall(renderHeader);
+      safeCall(renderProgress);
+      safeCall(renderView);
     }
   }
 
@@ -1429,43 +1435,42 @@
     const addBtn = $('#addTodayTask');
     addBtn.disabled = total >= 5;
 
-    // Task list
+    // Task list — built defensively so one malformed task can't blank the list.
     const listEl = $('#todayList');
     const emptyEl = $('#todayEmpty');
+    emptyEl.classList.toggle('hidden', total !== 0);
 
-    if (total === 0) {
-      emptyEl.classList.remove('hidden');
-      listEl.innerHTML = '';
-    } else {
-      emptyEl.classList.add('hidden');
-      listEl.innerHTML = '';
-      todayTasks.forEach((task) => {
+    let rowsHTML = '';
+    todayTasks.forEach((task) => {
+      try {
         const proj = state.projects.find((p) => p.id === task.projectId);
-        const row = document.createElement('div');
-        row.className = `task-row pr-${task.priority}${task.isCompleted ? ' is-done' : ''}`;
-        row.dataset.id = task.id;
-        row.innerHTML = `
-          <input type="checkbox" class="task-check" data-action="today-toggle" ${task.isCompleted ? 'checked' : ''} aria-label="Complete task" />
-          <div class="min-w-0 flex-1">
-            <p class="task-title">${escapeHTML(task.title)}</p>
-            <div class="flex items-center gap-2 mt-1 flex-wrap">
-              <span class="badge badge-${task.priority}">${task.priority}</span>
-              ${labelChip(task)}
-              ${estBadge(task)}
-              <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
+        rowsHTML += `
+          <div class="task-row pr-${escapeHTML(task.priority)}${task.isCompleted ? ' is-done' : ''}" data-id="${escapeHTML(task.id)}">
+            <input type="checkbox" class="task-check" data-action="today-toggle" ${task.isCompleted ? 'checked' : ''} aria-label="Complete task" />
+            <div class="min-w-0 flex-1">
+              <p class="task-title">${escapeHTML(task.title)}</p>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="badge badge-${escapeHTML(task.priority)}">${escapeHTML(task.priority)}</span>
+                ${labelChip(task)}
+                ${estBadge(task)}
+                <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
+              </div>
             </div>
-          </div>
-          <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
-            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </button>
-          <button class="task-del" data-action="today-remove" title="Remove from today" aria-label="Remove from today">
-            <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>`;
-        listEl.appendChild(row);
-      });
-    }
+            <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="task-del" data-action="today-remove" title="Remove from today" aria-label="Remove from today">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>`;
+      } catch (err) {
+        console.error('Skipped a malformed today task', task, err);
+      }
+    });
+    listEl.innerHTML = rowsHTML;
 
-    // Slot pips (5 dots showing how many slots used)
+    // Slot pips (always 5; filled = slots used). Rendered last and unconditionally
+    // so they can never get out of sync with the list above.
     const slotsEl = $('#todaySlots');
     slotsEl.innerHTML = '';
     for (let i = 0; i < 5; i++) {
