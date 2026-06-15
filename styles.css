@@ -835,3 +835,25 @@ html.started #landing { display: none; }
 
 /* Footer */
 .lp-foot { margin-top: auto; text-align: center; color: var(--faint); font-size: .82rem; padding: 2.5rem 1rem 3rem; }
+
+/* Landing · real screenshot frame */
+.lp-shot {
+  width: 100%; max-width: 600px; margin: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 44px 80px -34px rgba(0,0,0,.45), var(--card-shadow);
+  transform: rotate(1.6deg);
+}
+@media (min-width: 900px) { .lp-shot { transform: rotate(2deg); } }
+.lp-shot-bar { display: flex; gap: 7px; padding: 11px 13px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.lp-shot-bar span { width: 11px; height: 11px; border-radius: 50%; background: var(--faint); opacity: .55; }
+.lp-shot img { width: 100%; height: auto; display: block; }
+
+/* Landing · FAQ accordion (native details/summary, no JS) */
+.lp-faq { margin: 2rem auto 0; max-width: 760px; display: flex; flex-direction: column; gap: .7rem; }
+.lp-faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0 1.15rem; box-shadow: var(--card-shadow); }
+.lp-faq-item summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.05rem 0; font-weight: 700; font-size: 1rem; color: var(--ink); }
+.lp-faq-item summary::-webkit-details-marker { display: none; }
+.lp-faq-item summary::after { content: '+'; font-size: 1.35rem; line-height: 1; font-weight: 700; color: var(--primary-text); }
+.lp-faq-item[open] summary::after { content: '–'; }
+.lp-faq-a { color: var(--muted); font-size: .92rem; line-height: 1.6; padding: 0 0 1.1rem; margin: 0; }

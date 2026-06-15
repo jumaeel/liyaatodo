@@ -1,5 +1,5 @@
 /* Liyaatodo · service worker — network-first app shell, offline fallback */
-const CACHE = 'liyaatodo-v52';
+const CACHE = 'liyaatodo-v53';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
   './firebase-config.js',
   './manifest.json',
   './logo-mark.svg',
+  './preview-dashboard.jpg',
 ];
 
 self.addEventListener('install', (event) => {
