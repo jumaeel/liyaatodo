@@ -545,6 +545,23 @@ body.dnd-active { touch-action: none; overflow: hidden; user-select: none; -webk
 }
 .vb-btn-ghost:hover { border-color: var(--primary-soft-bd); transform: translateY(-1px); }
 
+/* Minimize / expand the dashboard banner */
+.vb-min {
+  position: absolute; top: .7rem; right: .7rem; z-index: 3;
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border-radius: 9px; color: var(--muted); background: transparent;
+}
+.vb-min:hover { background: rgba(0,0,0,.06); color: var(--ink); }
+.dark .vb-min:hover { background: rgba(255,255,255,.08); }
+.vb-min svg { width: 18px; height: 18px; transition: transform .3s ease; }
+.notepad-banner.is-min .vb-min svg { transform: rotate(180deg); }
+.notepad-banner.is-min .vb-inner { padding-top: .95rem; padding-bottom: .95rem; }
+.notepad-banner.is-min .vb-eyebrow,
+.notepad-banner.is-min .vb-sub,
+.notepad-banner.is-min .vb-actions,
+.notepad-banner.is-min .vb-swoosh { display: none; }
+.notepad-banner.is-min .vb-title { font-size: 1.15rem; line-height: 1.25; padding-right: 2rem; }
+
 /* Banner buttons (on dark hero) */
 .banner-btn-light { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.1rem; border-radius: 10px; font-size: .875rem; font-weight: 600; background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(4px); }
 .banner-btn-light:hover { background: rgba(255,255,255,.28); }

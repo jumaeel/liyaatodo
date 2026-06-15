@@ -344,14 +344,21 @@
 
             <!-- Vision banner · notepad style (matches the logo) -->
             <section class="notepad-banner relative overflow-hidden rounded-2xl">
-              <div class="relative p-7 sm:p-9 max-w-2xl">
+              <button id="bannerToggle" class="vb-min" type="button" title="Minimize" aria-label="Minimize welcome banner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+              </button>
+              <div class="vb-inner relative p-7 sm:p-9 max-w-2xl">
                 <span id="bannerEyebrow" class="vb-eyebrow">Your productivity, organized</span>
                 <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight vb-title">
                   Turn daily chaos into <span class="vb-accent">clear progress<svg class="vb-swoosh" viewBox="0 0 220 22" fill="none" aria-hidden="true"><path class="sw-accent" d="M4 13c56 9 118 8 178-5" stroke-width="7" stroke-linecap="round"/><path class="sw-primary" d="M188 12l9 8 16-19" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </h2>
                 <p class="mt-4 vb-sub sm:text-lg">Liyaatodo helps you capture every task, prioritize what truly matters with the Eisenhower method, and watch real progress build across all your projects — one focused day at a time.</p>
-                <div class="mt-6 flex flex-wrap gap-3">
-                  <button id="dashTodayFocus" class="vb-btn-primary">
+                <div class="vb-actions mt-6 flex flex-wrap gap-3">
+                  <button id="dashAddTask" class="vb-btn-primary">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Add task
+                  </button>
+                  <button id="dashTodayFocus" class="vb-btn-ghost">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     Today's Focus
                   </button>
@@ -1396,6 +1403,72 @@
           <button id="deleteProjectCancel" class="flex-1 py-2.5 rounded-xl2 border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-600 transition">Cancel</button>
           <button id="deleteProjectConfirm" class="flex-1 py-2.5 rounded-xl2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition">Delete</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Add Task Modal (from the dashboard) -->
+  <div id="quickAddModal" class="hidden fixed inset-0 z-50" aria-modal="true" role="dialog">
+    <div id="quickAddOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    <div class="relative h-full grid place-items-center p-4">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900">Add a task</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Pick a project, then add your task.</p>
+          </div>
+          <button id="quickAddClose" class="w-8 h-8 grid place-items-center rounded-lg hover:bg-slate-100 text-slate-400 text-lg font-bold leading-none transition">&times;</button>
+        </div>
+        <form id="quickAddForm" class="mt-4 space-y-3">
+          <label class="block">
+            <span class="block text-xs font-medium text-slate-400 mb-1">Project</span>
+            <select id="quickAddProject"
+              class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                     focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"></select>
+          </label>
+          <input id="quickAddTitle" type="text" required maxlength="120" placeholder="What needs to be done?"
+            class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
+                   focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+          <div class="flex flex-col sm:flex-row gap-3">
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Priority</span>
+              <select id="quickAddPriority"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition">
+                <option value="High">🔴 High</option>
+                <option value="Medium" selected>🟠 Medium</option>
+                <option value="Low">⚪ Low</option>
+              </select>
+            </label>
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Deadline</span>
+              <input id="quickAddDeadline" type="date"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+            </label>
+            <label class="flex-1">
+              <span class="block text-xs font-medium text-slate-400 mb-1">Est. time</span>
+              <input id="quickAddEstimate" type="text" maxlength="12" placeholder="e.g. 30m, 2h"
+                class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                       focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+            </label>
+          </div>
+          <label class="block">
+            <span class="block text-xs font-medium text-slate-400 mb-1">Label</span>
+            <input id="quickAddLabel" type="text" list="labelOptions" maxlength="24" placeholder="e.g. errand, study"
+              class="w-full px-3 py-2.5 rounded-xl2 border border-slate-200 bg-slate-50 text-sm
+                     focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition" />
+          </label>
+          <div class="flex items-center gap-2 flex-wrap pt-1">
+            <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
+            <button type="button" id="quickAddImportant" data-on="false" class="tag-toggle">★ Important</button>
+            <button type="button" id="quickAddUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+            <button type="submit" class="add-task-btn ml-auto">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add task
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

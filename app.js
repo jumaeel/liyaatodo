@@ -921,6 +921,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '3.0', type: 'improvement', title: 'Add tasks from the dashboard',     desc: 'A clear “Add task” button on the dashboard lets you add a task to any project in seconds — just pick the project and go.' },
     { v: '2.9', type: 'feature',     title: '“What’s coming up” deadlines',    desc: 'A new screen lists every task with a deadline across all your projects — grouped by overdue, today, tomorrow and the week ahead, soonest first.' },
     { v: '2.8', type: 'improvement', title: 'Today’s Focus resets each day',   desc: 'When a new day starts, your Today’s Focus list clears so you pick a fresh shortlist. Completed tasks stay done in their projects.' },
     { v: '2.7', type: 'feature',     title: 'Themes: Ink & Amber + Periwinkle', desc: 'Choose your look in Settings → Appearance — the warm “Ink & Amber” editorial theme or the original cool “Periwinkle”. Both work in light and dark mode.' },
@@ -1997,12 +1998,13 @@
     closeSidebar();
   }
 
-  function addTask({ title, priority, deadline, urgent, important, estimateMin, label }) {
+  function addTask({ title, priority, deadline, urgent, important, estimateMin, label, projectId }) {
     title = title.trim();
-    if (!title || !state.activeProjectId) return;
+    const pid = projectId || state.activeProjectId;
+    if (!title || !pid) return;
     const task = {
       id: uid(),
-      projectId: state.activeProjectId,
+      projectId: pid,
       title,
       priority: ['High', 'Medium', 'Low'].includes(priority) ? priority : 'Medium',
       deadline: deadline || null,
@@ -2016,6 +2018,25 @@
     save();
     render();
   }
+
+  /* ---------- Quick-add task (from the dashboard) ---------- */
+  function openQuickAdd() {
+    if (state.projects.length === 0) return;
+    const sel = $('#quickAddProject');
+    sel.innerHTML = state.projects.map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+    sel.value = state.activeProjectId || state.projects[0].id;
+    $('#quickAddTitle').value = '';
+    $('#quickAddPriority').value = 'Medium';
+    $('#quickAddDeadline').value = defaultDeadline();
+    $('#quickAddEstimate').value = '';
+    $('#quickAddLabel').value = '';
+    $('#quickAddImportant').dataset.on = 'false';
+    $('#quickAddUrgent').dataset.on = 'false';
+    refreshLabelOptions();
+    $('#quickAddModal').classList.remove('hidden');
+    setTimeout(() => $('#quickAddTitle').focus(), 50);
+  }
+  function closeQuickAdd() { $('#quickAddModal').classList.add('hidden'); }
 
   function toggleTask(id) {
     const task = state.tasks.find((t) => t.id === id);
@@ -2256,6 +2277,45 @@
     $('#dashTodayFocus').addEventListener('click', () => { switchScreen('today'); renderToday(); renderSidebar(); });
     $('#dashHowTo').addEventListener('click', () => { switchScreen('guide'); renderSidebar(); });
 
+    // --- Minimize / expand the dashboard welcome banner ---
+    const banner = $('.notepad-banner');
+    const bannerBtn = $('#bannerToggle');
+    const applyBannerMin = (min) => {
+      if (banner) banner.classList.toggle('is-min', min);
+      if (bannerBtn) {
+        bannerBtn.title = min ? 'Expand' : 'Minimize';
+        bannerBtn.setAttribute('aria-label', min ? 'Expand welcome banner' : 'Minimize welcome banner');
+      }
+    };
+    try { applyBannerMin(localStorage.getItem('liyaa.bannerMin') === '1'); } catch {}
+    if (bannerBtn) bannerBtn.addEventListener('click', () => {
+      const min = !banner.classList.contains('is-min');
+      try { localStorage.setItem('liyaa.bannerMin', min ? '1' : '0'); } catch {}
+      applyBannerMin(min);
+    });
+
+    // --- Quick-add task (dashboard) ---
+    $('#dashAddTask').addEventListener('click', openQuickAdd);
+    $('#quickAddClose').addEventListener('click', closeQuickAdd);
+    $('#quickAddOverlay').addEventListener('click', closeQuickAdd);
+    $('#quickAddForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const projectId = $('#quickAddProject').value;
+      addTask({
+        title: $('#quickAddTitle').value,
+        priority: $('#quickAddPriority').value,
+        deadline: $('#quickAddDeadline').value,
+        important: $('#quickAddImportant').dataset.on === 'true',
+        urgent: $('#quickAddUrgent').dataset.on === 'true',
+        estimateMin: parseEstimate($('#quickAddEstimate').value),
+        label: $('#quickAddLabel').value,
+        projectId,
+      });
+      closeQuickAdd();
+      const proj = state.projects.find((p) => p.id === projectId);
+      toast(`Task added to ${proj ? proj.name : 'project'} ✓`);
+    });
+
     // --- Add project ---
     $('#addProjectForm').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -2301,7 +2361,7 @@
     });
 
     // --- Eisenhower toggles ---
-    [['#newImportant'], ['#newUrgent'], ['#editImportant'], ['#editUrgent']].forEach(([sel]) => {
+    [['#newImportant'], ['#newUrgent'], ['#editImportant'], ['#editUrgent'], ['#quickAddImportant'], ['#quickAddUrgent']].forEach(([sel]) => {
       $(sel).addEventListener('click', () => {
         const btn = $(sel);
         btn.dataset.on = btn.dataset.on === 'true' ? 'false' : 'true';
@@ -2403,7 +2463,7 @@
     $('#taskPickerOverlay').addEventListener('click', closeTaskPicker);
     $('#taskPickerSearch').addEventListener('input', (e) => renderTaskPickerList(e.target.value));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); closeChangelog(); closeDeleteProject(); }
+      if (e.key === 'Escape') { closeTaskPicker(); closeEditTask(); closeRenameProject(); closeNotifPanel(); closeEraseModal(); closeChangelog(); closeDeleteProject(); closeQuickAdd(); }
     });
 
     // --- Drag & drop ---
