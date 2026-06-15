@@ -201,6 +201,15 @@
       Cloud.db = firebase.firestore();
       Cloud.enabled = true;
       firebase.auth().onAuthStateChanged(onAuthChanged);
+      // Complete any redirect-based sign-in started earlier (mobile / PWA path).
+      firebase.auth().getRedirectResult().catch((err) => {
+        console.error('Redirect sign-in failed:', err);
+        if (err && err.code === 'auth/unauthorized-domain') {
+          toast('This site isn’t authorized for sign-in. Add its domain in Firebase → Authentication.');
+        } else if (err && err.code) {
+          toast('Sign-in failed — ' + err.code);
+        }
+      });
     } catch (err) {
       console.error('Firebase init failed:', err);
       Cloud.enabled = false;
@@ -211,9 +220,31 @@
   function cloudSignIn() {
     if (!Cloud.enabled) { toast('Cloud sign-in is not set up yet'); return; }
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    // A popup is nicest on desktop; fall back to a full-page redirect when the
+    // browser blocks popups or doesn't support them (common on mobile / PWAs).
     firebase.auth().signInWithPopup(provider).catch((err) => {
-      console.error('Sign-in failed:', err);
-      toast('Sign-in failed — ' + (err.code || err.message || 'try again'));
+      console.error('Popup sign-in failed:', err);
+      const code = (err && err.code) || '';
+      const popupUnavailable = [
+        'auth/popup-blocked',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment',
+        'auth/web-storage-unsupported',
+      ].includes(code);
+      if (popupUnavailable) {
+        firebase.auth().signInWithRedirect(provider).catch((e) => {
+          console.error('Redirect sign-in failed:', e);
+          toast('Sign-in failed — ' + ((e && e.code) || 'try again'));
+        });
+        return;
+      }
+      if (code === 'auth/popup-closed-by-user') return; // user dismissed it
+      if (code === 'auth/unauthorized-domain') {
+        toast('This site isn’t authorized for sign-in. Add its domain in Firebase → Authentication.');
+        return;
+      }
+      toast('Sign-in failed — ' + (code || (err && err.message) || 'try again'));
     });
   }
 
@@ -1183,36 +1214,56 @@
 
   /* ---------- Rotating motivation quotes (Today's Focus) ---------- */
   const QUOTES = [
-    { text: "And that there is not for man except that [good] for which he strives.", source: "Quran 53:39 🎯", note: "Your future isn't defined by what you wish for; it is defined by what you actively work for. 📈" },
-    { text: "Indeed, Allah will not change the condition of a people until they change what is in themselves.", source: "Quran 13:11 🌱", note: "Growth starts with you. Don't wait for your circumstances to change before you start working. 🚀" },
-    { text: "O Allah, I seek refuge in You from anxiety and sorrow, and I seek refuge in You from helplessness and laziness.", source: "Prophet Muhammad ﷺ 🛡️", note: "The Prophet actively made Dua against laziness — treat it like the enemy to your potential that it is. ❌" },
-    { text: "Take benefit of five before five: your youth before your old age, your health before your sickness, your wealth before your poverty, your free time before your preoccupation, and your life before your death.", source: "Prophet Muhammad ﷺ ⏳", note: "" },
-    { text: "A strong believer is better and more beloved to Allah than a weak believer, and there is good in everyone. Cherish that which benefits you, seek help from Allah, and do not feel helpless.", source: "Prophet Muhammad ﷺ 💪", note: "" },
-    { text: "The iron is rust-eaten if it is not used; stagnant water loses its purity… even so does inaction sap the vigour of the mind.", source: "Islamic Wisdom ⚙️", note: "" },
-    { text: "Laziness is nothing more than the habit of resting before you get tired. Get up and build something that outlives you.", source: "Unknown 🏗️", note: "" },
-    { text: "Your alarm for Fajr is your first test of discipline for the day. If you can conquer your blanket, you can conquer your dreams.", source: "Unknown ☀️🌅", note: "" },
-    { text: "Shaytan loves an idle mind and a lazy body. Keep yourself moving, keep yourself working, and keep yourself relevant.", source: "Unknown 🧠🏃", note: "" },
-    { text: "Do not treat your youth as a vacation from responsibility. It is the foundation of your entire legacy.", source: "Unknown 💎", note: "" },
-    { text: "So when you have finished [your duties], then stand up [for worship]. And to your Lord direct [your] longing.", source: "Quran 94:7-8 🔄", note: "Move directly from one productive task to another. True rest comes in Jannah. 🌌" },
-    { text: "Indeed, Allah loves that when one of you does something, he does it with excellence (Ihsan).", source: "Prophet Muhammad ﷺ ✨", note: "Don't just aim to get by. Aim for top-tier quality, because Allah loves elite effort. 🏆" },
-    { text: "Tomorrow is a hope, yesterday is a dream, today is a reality — act now.", source: "Umar ibn al-Khattāb 🗓️⚡", note: "" },
-    { text: "Knowledge without action is insanity, and action without knowledge is vanity.", source: "Imam Al-Ghazali 📚🛠️", note: "" },
-    { text: "Work for this world as if you will live forever, and work for the Hereafter as if you will die tomorrow.", source: "Ali ibn Abi Talib 🌍💫", note: "Build impactful projects in this life, but keep your heart tied to the Next. 👑" },
-    { text: "Do not let your difficulties fill you with anxiety; after all, it is only in the darkest nights that stars shine more brightly.", source: "Ali ibn Abi Talib 🌃⭐", note: "" },
-    { text: "You are part of an Ummah built by young people who shook the world. Stop scrolling and start building.", source: "Unknown 🛠️", note: "" },
-    { text: "When you build a halal business, study your major, or code an app with the intention to serve people and please Allah, your work becomes worship.", source: "Unknown 💻💼", note: "" },
-    { text: "Excuses don't build empires, nor do they earn Jannah. Show up even when you don't feel like it.", source: "Unknown 🥊", note: "" },
-    { text: "Look at the companions of the Prophet — they were young, bold, ambitious and incredibly hardworking. Match their energy.", source: "Unknown ⚡🔥", note: "" },
-    { text: "Actions are judged by intentions.", source: "Prophet Muhammad ﷺ 🫀", note: "A pure intention (Niyyah) turns your long study hours into heavy good deeds. ⚖️" },
-    { text: "The best among you are those who have the best manners and character.", source: "Prophet Muhammad ﷺ 🤝", note: "" },
-    { text: "A pure intention rewrites the value of your daily grind. You aren't just working for a grade — you're working to elevate the Ummah.", source: "Unknown 🌍", note: "" },
-    { text: "Success isn't about being better than anyone else. It's about being better than you were yesterday, for the sake of Allah.", source: "Unknown 🔄📈", note: "" },
-    { text: "Do your absolute best, tie your camel with precision, and let Allah handle the results. True peace is knowing you gave it 100%.", source: "Unknown 🐫🔒", note: "" },
-    { text: "Consistency is the bridge between goals and accomplishment. A little work done every single day is beloved to Allah.", source: "Unknown 📅🧱", note: "" },
-    { text: "Don't study just to get rich. Study to be wise, capable, and a source of strength for everyone around you.", source: "Unknown 🎓", note: "" },
-    { text: "Your potential is a gift from Allah. What you do with that potential is your gift back to Him.", source: "Unknown 🎁✨", note: "" },
-    { text: "Stop waiting for the 'perfect moment' or for 'motivation' to hit. Discipline over mood, always.", source: "Unknown ⏳", note: "" },
-    { text: "The ultimate success is walking into Jannah knowing you didn't waste the life, the intellect, or the youth Allah trusted you with.", source: "Unknown 👑🏡", note: "" },
+    { text: `And when the prayer has been concluded, disperse within the land and seek from the bounty of Allah, and remember Allah much that you may succeed.`, source: `Quran 62:10 💼🌍`, note: `` },
+    { text: `And seek help through patience and prayer.`, source: `Quran 2:45 🧘‍♂️🔋`, note: `` },
+    { text: `So verily, with the hardship, there is relief. Verily, with the hardship, there is relief. So when you have finished [your duties], still labor hard.`, source: `Quran 94:5-7 ⛰️🛠️`, note: `` },
+    { text: `And prepare against them whatever you are able of power.`, source: `Quran 8:60 🛡️⚙️`, note: `` },
+    { text: `By time, indeed, mankind is in loss, except for those who have believed and done righteous deeds and advised each other to truth and advised each other to patience.`, source: `Quran 103:1-3 ⏳📉`, note: `` },
+    { text: `Race with one another in hastening towards forgiveness from your Lord and Paradise.`, source: `Quran 57:21 🏎️🏁`, note: `` },
+    { text: `And say, "Do [as you will], for Allah will see your deeds, and [so, will] His Messenger and the believers."`, source: `Quran 9:105 👀📊`, note: `` },
+    { text: `And whoever fears Allah — He will make for him a way out and will provide for him from where he does not expect.`, source: `Quran 65:2-3 🗝️✨`, note: `` },
+    { text: `The early morning hours are blessed for my Ummah.`, source: `Prophet Muhammad ﷺ 🌅🐓`, note: `` },
+    { text: `The most beloved of deeds to Allah are those that are most consistent, even if they are small.`, source: `Prophet Muhammad ﷺ 💧🪨`, note: `` },
+    { text: `If the Resurrection were established upon one of you while he has a sapling in his hand, let him plant it.`, source: `Prophet Muhammad ﷺ 🌱🌲`, note: `` },
+    { text: `Two blessings many people lose out on: health and free time.`, source: `Prophet Muhammad ﷺ 🩺⏳`, note: `` },
+    { text: `Tie your camel and trust in Allah.`, source: `Prophet Muhammad ﷺ 🐫🔒`, note: `` },
+    { text: `A person's feet will not move on the Day of Resurrection until he is asked about his life and how he spent it, and his knowledge and what he did with it.`, source: `Prophet Muhammad ﷺ ⚖️📝`, note: `` },
+    { text: `Allah is pleased with the servant who eats a meal and praises Him for it, or takes a drink and praises Him for it. Gratitude fuels performance.`, source: `Prophet Muhammad ﷺ 🥞🤲`, note: `` },
+    { text: `I detest seeing a man idle, pursuing neither the matters of this world nor the matters of the Hereafter.`, source: `Umar ibn Al-Khattab (RA) 🛑`, note: `` },
+    { text: `If you survive until the evening, do not expect to be alive in the morning, and if you survive until the morning, do not expect to be alive in the evening. Take from your health for your sickness, and from your life for your death.`, source: `Abdullah ibn Umar (RA) ⏳📅`, note: `` },
+    { text: `Losing time is worse than death, because losing time cuts you off from Allah and the Hereafter, while death merely cuts you off from this worldly life and its people.`, source: `Ibn al-Qayyim ⏳💀`, note: `` },
+    { text: `Every day the sun rises, it calls out: "O son of Adam! I am a new creation and a witness to your deeds. So make the most of me, for I will never return until the Day of Judgment."`, source: `Hasan al-Basri ☀️📜`, note: `` },
+    { text: `Your life is divided into breaths, and each breath is a treasure. Be careful not to let a single breath pass without a return.`, source: `Imam Al-Ghazali 🫁💎`, note: `` },
+    { text: `Focus on Barakah (divine blessing), not just metrics. A productive Muslim seeks output that multiplies in value, not just hours logged.`, source: `Unknown 📈✨`, note: `` },
+    { text: `You don't need more time; you need more focus. Put down the distractions and honor the intellect Allah gifted you.`, source: `Unknown 🧠🚫`, note: `` },
+    { text: `Your daily routine is either pulling you closer to your potential or pushing you toward regret. Choose wisely at the next click.`, source: `Unknown 🎛️🧭`, note: `` },
+    { text: `Procrastination is nothing but a whisper from Shaytan trying to rob you of your potential. Crush it with "Bismillah" and move.`, source: `Unknown 💥🥊`, note: `` },
+    { text: `Stop scrolling through other people's lives and start building the legacy Allah created you to leave.`, source: `Unknown 📱🛑`, note: `` },
+    { text: `True discipline is praying your Salah on time, starting your deep work on time, and putting your phone away on time. Master your time, master your life.`, source: `Unknown ⏰👑`, note: `` },
+    { text: `An open tab is an open invitation for distraction. Protect your focus like you protect your wealth.`, source: `Unknown 💻🛡️`, note: `` },
+    { text: `The companions conquered empires in their twenties because they traded comfort for contribution. What are you trading your youth for?`, source: `Unknown 🌍⚔️`, note: `` },
+    { text: `Don't pray for an easy life; pray for the strength, focus, and discipline to handle a heavy build.`, source: `Unknown 💪🏗️`, note: `` },
+    { text: `Your work desk is a prayer mat if your intention is to provide for your family and honor the Ummah. Clean it, respect it, and excel.`, source: `Unknown 🖥️✨`, note: `` },
+    { text: `If your vision doesn't require you to rely on Allah's help, your vision isn't big enough.`, source: `Unknown 🚀🤲`, note: `` },
+    { text: `The difference between who you are and who you want to be is what you do after you close this browser.`, source: `Unknown 🚪🏃‍♂️`, note: `` },
+    { text: `Discipline isn't punishment; it's self-love. It's refusing to let your temporary laziness ruin your permanent potential.`, source: `Unknown 💎🔒`, note: `` },
+    { text: `The ultimate hack for productivity is a clean heart. Sins cloud the mind; repentance clears the path for focus.`, source: `Unknown 🫀🧼`, note: `` },
+    { text: `You were created to be a Khalifa (steward) on this earth. Act like a leader, work like a builder, and think like a visionary.`, source: `Unknown 🌍👑`, note: `` },
+    { text: `Barakah isn't magic; it's strategy aligned with spirituality. Wake early, start with Bismillah, and watch your time expand.`, source: `Unknown 📈⏳`, note: `` },
+    { text: `If you can conquer the morning, the rest of the day is just a downhill sprint. Show up for Fajr, stay up for the grind.`, source: `Unknown ☀️🏃🏽‍♂️`, note: `` },
+    { text: `A little progress each day adds up to big results. Allah values the trajectory of your effort, not just the speed.`, source: `Unknown 📈💧`, note: `` },
+    { text: `Don't mistake being busy with being productive. Busy is frantic; productive is focused on what brings maximum benefit.`, source: `Unknown 🐝🎯`, note: `` },
+    { text: `Your energy is a trust (Amanah) from Allah. Don't waste it on toxic algorithms, meaningless debates, or idle thoughts.`, source: `Unknown 🔋❌`, note: `` },
+    { text: `The secret to high output is intentional input. Guard what you read, what you watch, and what you listen to.`, source: `Unknown 📥🛡️`, note: `` },
+    { text: `Success is 10% strategy and 90% showing up when you'd rather sleep. Get to work.`, source: `Unknown 🛌🛑`, note: `` },
+    { text: `When you live your life for a higher purpose, your daily mundane tasks get elevated to acts of worship.`, source: `Mohammed Faris 🧗‍♂️✨`, note: `` },
+    { text: `Time is like a river; you cannot touch the same water twice because the flow that has passed will never pass again. Enjoy every moment of life.`, source: `Mohammed Faris 🌊⏳`, note: `` },
+    { text: `Barakah is not about having more; it is about doing more with the little you have.`, source: `Mohammed Faris 🪙➕`, note: `` },
+    { text: `Productivity is not about squeezing more out of your day; it's about understanding your purpose and aligning your energy to meet it.`, source: `Mohammed Faris 🎯🔋`, note: `` },
+    { text: `If you link your personal goals to the ultimate goal of seeking Allah's pleasure, you will never run out of energy.`, source: `Mohammed Faris ⚡🤲`, note: `` },
+    { text: `True success is when your spiritual energy, physical energy, and focus are all working together toward a single, noble goal.`, source: `Mohammed Faris 🔋🧠✨`, note: `` },
+    { text: `Don't ask Allah to bless your plans; ask Allah to guide you to plans that are already blessed.`, source: `Mohammed Faris 🗺️🙌`, note: `` },
+    { text: `The moment you take control of your morning routine with a spiritual focus, the rest of your day falls into perfect alignment.`, source: `Mohammed Faris 🌅⚙️`, note: `` },
   ];
   let quoteIdx = 0;
 
