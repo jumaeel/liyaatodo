@@ -1,0 +1,10 @@
+# Cloudflare Pages headers
+# Always revalidate the shell + service worker so new deploys ship immediately.
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+/firebase-config.js
+  Cache-Control: no-cache

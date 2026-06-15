@@ -1,3 +1,2 @@
-.DS_Store
+.cf-publish/
 node_modules/
-*.log
