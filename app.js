@@ -932,6 +932,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '3.2', type: 'feature',     title: 'Add to Today’s Focus from a project', desc: 'Each task in a project now has a Today’s Focus button — tap it to add (or remove) the task to today’s shortlist without leaving the project.' },
     { v: '3.1', type: 'feature',     title: 'Project priority levels',          desc: 'Give each project a priority (High / Medium / Low) via Edit project — new tasks in that project default to its priority, and the sidebar dot shows it at a glance.' },
     { v: '3.0', type: 'improvement', title: 'Add tasks from the dashboard',     desc: 'A clear “Add task” button on the dashboard lets you add a task to any project in seconds — just pick the project and go.' },
     { v: '2.9', type: 'feature',     title: '“What’s coming up” deadlines',    desc: 'A new screen lists every task with a deadline across all your projects — grouped by overdue, today, tomorrow and the week ahead, soonest first.' },
@@ -1708,6 +1709,7 @@
     row.className = `task-row pr-${task.priority}` + (task.isCompleted ? ' is-done' : '') + (opts.draggable ? ' is-draggable' : '');
     row.dataset.id = task.id;
 
+    const inToday = state.todayTaskIds.includes(task.id);
     const overdue = isOverdue(task);
     const dueHTML = task.deadline
       ? `<span class="due ${overdue ? 'overdue' : ''}">
@@ -1729,6 +1731,9 @@
       </div>
       <button class="task-tag ${task.important ? 'on-imp' : ''}" data-action="toggle-important" title="${task.important ? 'Important' : 'Mark important'}" aria-pressed="${task.important}">★</button>
       <button class="task-tag ${task.urgent ? 'on-urg' : ''}" data-action="toggle-urgent" title="${task.urgent ? 'Urgent' : 'Mark urgent'}" aria-pressed="${task.urgent}">⚡</button>
+      <button class="task-tag task-today ${inToday ? 'on-today' : ''}" data-action="today-add" title="${inToday ? "In Today's Focus — click to remove" : "Add to Today's Focus"}" aria-pressed="${inToday}" aria-label="Toggle Today's Focus">
+        <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </button>
       <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
         <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
       </button>
@@ -2152,6 +2157,24 @@
     renderSidebar();
   }
 
+  // Toggle a task in/out of Today's Focus (used from the project task rows).
+  function toggleTaskToday(id) {
+    const task = state.tasks.find((t) => t.id === id);
+    if (!task) return;
+    if (state.todayTaskIds.includes(id)) {
+      state.todayTaskIds = state.todayTaskIds.filter((tid) => tid !== id);
+      save();
+      render();
+      toast("Removed from Today's Focus");
+    } else {
+      if (state.todayTaskIds.length >= 5) { toast('Today is full — max 5 tasks'); return; }
+      state.todayTaskIds.push(id);
+      save();
+      render();
+      toast("Added to Today's Focus ✓");
+    }
+  }
+
   /* ---------- Pointer-based drag & drop ---------- */
   function setupMatrixDnD() {
     const grid = $('#matrixView');
@@ -2445,6 +2468,7 @@
         case 'edit':             openEditTask(id); break;
         case 'toggle-important': toggleTaskFlag(id, 'important'); break;
         case 'toggle-urgent':    toggleTaskFlag(id, 'urgent'); break;
+        case 'today-add':        toggleTaskToday(id); break;
         case 'filter-label':     setLabelFilter(action.dataset.label); break;
       }
     };

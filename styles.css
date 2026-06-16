@@ -477,6 +477,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; backgr
 .task-tag:hover { border-color: var(--faint); color: var(--muted); }
 .task-tag.on-imp { background: var(--important-bg); border-color: var(--important-bd); color: var(--important-text); }
 .task-tag.on-urg { background: var(--urgent-bg); border-color: var(--urgent-bd); color: var(--urgent-text); }
+.task-tag.task-today:hover { border-color: var(--primary-soft-bd); color: var(--primary-text); }
+.task-tag.on-today { background: var(--primary-soft); border-color: var(--primary-soft-bd); color: var(--primary-text); }
 
 /* ---- Segmented view switch ---- */
 .seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 2px; }
