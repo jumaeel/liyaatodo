@@ -144,6 +144,10 @@
     if (!state.projects.some((p) => p.id === state.activeProjectId)) {
       state.activeProjectId = state.projects[0]?.id ?? null;
     }
+    // Each project carries a default priority level (used as the default for new tasks).
+    state.projects.forEach((p) => {
+      if (!['High', 'Medium', 'Low'].includes(p.priority)) p.priority = 'Medium';
+    });
     // Migrate older tasks that predate the Eisenhower fields.
     state.tasks.forEach((t) => {
       if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
@@ -556,9 +560,10 @@
       const btn = document.createElement('button');
       btn.className = 'project-item' + (isActive ? ' is-active' : '');
       btn.dataset.id = proj.id;
+      const pVar = proj.priority === 'High' ? 'var(--pr-high)' : proj.priority === 'Low' ? 'var(--pr-low)' : 'var(--pr-med)';
       btn.innerHTML = `
         <span class="proj-main">
-          <span class="project-dot"></span>
+          <span class="project-dot" style="background:${pVar}" title="${escapeHTML(proj.priority)} priority"></span>
           <span class="proj-name truncate">${escapeHTML(proj.name)}</span>
           <span class="proj-count">${total}</span>
           <span class="proj-actions">
@@ -927,6 +932,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '3.1', type: 'feature',     title: 'Project priority levels',          desc: 'Give each project a priority (High / Medium / Low) via Edit project — new tasks in that project default to its priority, and the sidebar dot shows it at a glance.' },
     { v: '3.0', type: 'improvement', title: 'Add tasks from the dashboard',     desc: 'A clear “Add task” button on the dashboard lets you add a task to any project in seconds — just pick the project and go.' },
     { v: '2.9', type: 'feature',     title: '“What’s coming up” deadlines',    desc: 'A new screen lists every task with a deadline across all your projects — grouped by overdue, today, tomorrow and the week ahead, soonest first.' },
     { v: '2.8', type: 'improvement', title: 'Today’s Focus resets each day',   desc: 'When a new day starts, your Today’s Focus list clears so you pick a fresh shortlist. Completed tasks stay done in their projects.' },
@@ -1563,9 +1569,25 @@
   }
 
   /* ---------- Project screen ---------- */
+  let lastPriorityProjectId = null;
+
   function renderHeader() {
     const proj = activeProject();
     $('#activeProjectName').textContent = proj ? proj.name : '—';
+
+    // Project priority badge (click to edit) + default new-task priority for this project.
+    const prBadge = $('#activeProjectPriority');
+    if (prBadge) {
+      const pr = proj ? proj.priority : 'Medium';
+      prBadge.textContent = `${pr} priority`;
+      prBadge.className = `proj-pr-badge badge badge-${pr}`;
+    }
+    // When the open project changes, default the add-task priority to the project's.
+    if (proj && proj.id !== lastPriorityProjectId) {
+      lastPriorityProjectId = proj.id;
+      const sel = $('#taskPriority');
+      if (sel) sel.value = proj.priority;
+    }
 
     const tasks = proj ? tasksFor(proj.id) : [];
     const done = tasks.filter((t) => t.isCompleted).length;
@@ -1762,7 +1784,7 @@
   function addProject(name) {
     name = name.trim();
     if (!name) return;
-    const proj = { id: uid(), name };
+    const proj = { id: uid(), name, priority: 'Medium' };
     state.projects.push(proj);
     state.activeProjectId = proj.id;
     save();
@@ -1828,6 +1850,8 @@
     renamingProjectId = id;
     const input = $('#renameProjectInput');
     input.value = proj.name;
+    const prSel = $('#renameProjectPriority');
+    if (prSel) prSel.value = ['High', 'Medium', 'Low'].includes(proj.priority) ? proj.priority : 'Medium';
     $('#renameProjectModal').classList.remove('hidden');
     setTimeout(() => { input.focus(); input.select(); }, 50);
   }
@@ -1844,10 +1868,14 @@
     const name = $('#renameProjectInput').value.trim();
     if (!name) return;
     proj.name = name;
+    const prSel = $('#renameProjectPriority');
+    if (prSel && ['High', 'Medium', 'Low'].includes(prSel.value)) proj.priority = prSel.value;
+    // Reflect the project's new default in the open add-task form.
+    if (proj.id === state.activeProjectId) { lastPriorityProjectId = null; }
     save();
     render();
     closeRenameProject();
-    toast('Project renamed');
+    toast('Project updated');
   }
 
   function setLabelFilter(label) {
@@ -2025,13 +2053,17 @@
   }
 
   /* ---------- Quick-add task (from the dashboard) ---------- */
+  function quickAddProjectPriority(projectId) {
+    const p = state.projects.find((x) => x.id === projectId);
+    return p && ['High', 'Medium', 'Low'].includes(p.priority) ? p.priority : 'Medium';
+  }
   function openQuickAdd() {
     if (state.projects.length === 0) return;
     const sel = $('#quickAddProject');
     sel.innerHTML = state.projects.map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
     sel.value = state.activeProjectId || state.projects[0].id;
     $('#quickAddTitle').value = '';
-    $('#quickAddPriority').value = 'Medium';
+    $('#quickAddPriority').value = quickAddProjectPriority(sel.value);
     $('#quickAddDeadline').value = defaultDeadline();
     $('#quickAddEstimate').value = '';
     $('#quickAddLabel').value = '';
@@ -2303,6 +2335,10 @@
     $('#dashAddTask').addEventListener('click', openQuickAdd);
     $('#quickAddClose').addEventListener('click', closeQuickAdd);
     $('#quickAddOverlay').addEventListener('click', closeQuickAdd);
+    // Changing the target project updates the default priority to that project's.
+    $('#quickAddProject').addEventListener('change', (e) => {
+      $('#quickAddPriority').value = quickAddProjectPriority(e.target.value);
+    });
     $('#quickAddForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const projectId = $('#quickAddProject').value;
@@ -2391,6 +2427,8 @@
       $('#taskLabel').value = '';
       $('#newImportant').dataset.on = 'false';
       $('#newUrgent').dataset.on = 'false';
+      const ap = activeProject();
+      if (ap) $('#taskPriority').value = ap.priority; // back to the project's default
       $('#taskTitle').focus();
     });
 
@@ -2557,6 +2595,11 @@
     $('#deleteProjectConfirm').addEventListener('click', confirmDeleteProject);
     $('#deleteProjectCancel').addEventListener('click', closeDeleteProject);
     $('#deleteProjectOverlay').addEventListener('click', closeDeleteProject);
+
+    // --- Project priority badge → open edit ---
+    $('#activeProjectPriority').addEventListener('click', () => {
+      if (state.activeProjectId) openRenameProject(state.activeProjectId);
+    });
 
     // --- Rename project ---
     $('#renameProjectBtn').addEventListener('click', () => {

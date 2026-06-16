@@ -424,6 +424,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; backgr
 .badge-Medium { background: var(--pr-med-soft);  color: var(--pr-med-text); }
 .badge-Low    { background: var(--pr-low-soft);  color: var(--pr-low-text); }
 
+/* Clickable project-priority badge in the project header */
+.proj-pr-badge { border: none; cursor: pointer; transition: filter .15s ease, transform .15s ease; }
+.proj-pr-badge:hover { filter: brightness(.95); transform: translateY(-1px); }
+
 .due { font-size: 0.75rem; color: var(--muted); display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .due.overdue { color: var(--danger-text); font-weight: 700; }
 
