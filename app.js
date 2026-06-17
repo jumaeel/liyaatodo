@@ -807,12 +807,7 @@
             </div>
           </div>
           <svg class="w-4 h-4 text-slate-300 group-hover:text-slate-400 shrink-0 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>`;
-        row.addEventListener('click', () => {
-          state.activeProjectId = proj.id;
-          switchScreen('project');
-          render();
-          closeSidebar();
-        });
+        row.addEventListener('click', () => selectProject(proj.id));
         projEl.appendChild(row);
       });
     }
@@ -843,7 +838,7 @@
 
   function buildNotifications() {
     const items = [];
-    const open = state.tasks.filter((t) => !t.isCompleted);
+    const open = state.tasks.filter((t) => !t.isCompleted && !isArchived(t.projectId));
     const pName = (id) => (state.projects.find((p) => p.id === id) || {}).name || '';
 
     open.filter(isOverdue).forEach((t) => items.push({
@@ -1194,7 +1189,9 @@
   }
 
   function resetCache() {
-    if (!confirm('Clear the app cache and reload? Your tasks are kept.')) return;
+    // No native confirm() — it's a silent no-op in installed PWAs, and this is
+    // non-destructive (tasks are kept). The button label already states intent.
+    toast('Clearing cache & reloading…');
     const done = () => window.location.reload();
     if ('caches' in window) {
       caches.keys()
@@ -1244,6 +1241,7 @@
   function eraseTasksOnly() {
     state.tasks = [];
     state.todayTaskIds = [];
+    state.tomorrowTaskIds = [];
     save();
     render();
     closeEraseModal();
@@ -1251,11 +1249,12 @@
   }
 
   function eraseProjectsAndTasks() {
-    const general = { id: uid(), name: 'General' };
+    const general = { id: uid(), name: 'General', priority: 'Medium', archived: false };
     state.projects = [general];
     state.activeProjectId = general.id;
     state.tasks = [];
     state.todayTaskIds = [];
+    state.tomorrowTaskIds = [];
     save();
     switchScreen('dashboard');
     render();
@@ -1982,6 +1981,7 @@
 
     const taskIds = new Set(tasksFor(id).map((t) => t.id));
     state.todayTaskIds = state.todayTaskIds.filter((tid) => !taskIds.has(tid));
+    state.tomorrowTaskIds = state.tomorrowTaskIds.filter((tid) => !taskIds.has(tid));
     state.projects = state.projects.filter((p) => p.id !== id);
     state.tasks = state.tasks.filter((t) => t.projectId !== id);
     if (state.activeProjectId === id) state.activeProjectId = state.projects[0].id;
@@ -2432,6 +2432,7 @@
 
   function deleteTask(id) {
     state.todayTaskIds = state.todayTaskIds.filter((tid) => tid !== id);
+    state.tomorrowTaskIds = state.tomorrowTaskIds.filter((tid) => tid !== id);
     state.tasks = state.tasks.filter((t) => t.id !== id);
     save();
     render();
