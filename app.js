@@ -932,6 +932,7 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '3.3', type: 'feature',     title: 'New “Fly” theme',                 desc: 'A third theme in Settings → Appearance: a structured, modern violet look with Bricolage Grotesque type. Works in light and dark.' },
     { v: '3.2', type: 'feature',     title: 'Add to Today’s Focus from a project', desc: 'Each task in a project now has a Today’s Focus button — tap it to add (or remove) the task to today’s shortlist without leaving the project.' },
     { v: '3.1', type: 'feature',     title: 'Project priority levels',          desc: 'Give each project a priority (High / Medium / Low) via Edit project — new tasks in that project default to its priority, and the sidebar dot shows it at a glance.' },
     { v: '3.0', type: 'improvement', title: 'Add tasks from the dashboard',     desc: 'A clear “Add task” button on the dashboard lets you add a task to any project in seconds — just pick the project and go.' },
@@ -2678,9 +2679,12 @@
     if (lpSignIn) lpSignIn.addEventListener('click', cloudSignIn);
   }
 
-  const SKIN_META = { amber: '#0f5e57', blue: '#5b6cf2' };
+  const SKINS = ['amber', 'blue', 'fly'];
+  const SKIN_META = { amber: '#0f5e57', blue: '#5b6cf2', fly: '#7c3aed' };
+  const SKIN_NAME = { amber: 'Ink & Amber', blue: 'Periwinkle', fly: 'Fly' };
   function currentSkin() {
-    return document.documentElement.getAttribute('data-theme') === 'blue' ? 'blue' : 'amber';
+    const t = document.documentElement.getAttribute('data-theme');
+    return SKINS.includes(t) ? t : 'amber';
   }
   function applySkinMeta(skin) {
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -2691,12 +2695,12 @@
     $$('#themePicker [data-skin]').forEach((c) => c.classList.toggle('is-active', c.dataset.skin === skin));
   }
   function setSkin(skin) {
-    if (skin !== 'amber' && skin !== 'blue') skin = 'amber';
+    if (!SKINS.includes(skin)) skin = 'amber';
     document.documentElement.setAttribute('data-theme', skin);
     try { localStorage.setItem('liyaa.skin', skin); } catch {}
     applySkinMeta(skin);
     syncThemeCards();
-    toast(skin === 'blue' ? '🎨 Periwinkle theme' : '🎨 Ink & Amber theme');
+    toast(`🎨 ${SKIN_NAME[skin]} theme`);
   }
 
   function syncFilterChips() {
