@@ -14,6 +14,7 @@
     tasks: [],           // { id, projectId, title, priority, deadline, isCompleted, urgent, important }
     activeProjectId: null,
     todayTaskIds: [],    // up to 5 task IDs selected for today
+    tomorrowTaskIds: [], // up to 5 task IDs planned for tomorrow (promoted on rollover)
     todayStamp: null,    // local day key the today list belongs to (yyyy-mm-dd)
     todayArchive: [],    // past days' summaries { date, total, done }
     user: { name: '' },  // the person using the app
@@ -122,6 +123,7 @@
         tasks: parsed.tasks,
         activeProjectId: parsed.activeProjectId ?? null,
         todayTaskIds: Array.isArray(parsed.todayTaskIds) ? parsed.todayTaskIds : [],
+        tomorrowTaskIds: Array.isArray(parsed.tomorrowTaskIds) ? parsed.tomorrowTaskIds : [],
         todayStamp: typeof parsed.todayStamp === 'string' ? parsed.todayStamp : null,
         todayArchive: Array.isArray(parsed.todayArchive) ? parsed.todayArchive : [],
         user: parsed.user && typeof parsed.user.name === 'string' ? parsed.user : { name: '' },
@@ -144,10 +146,17 @@
     if (!state.projects.some((p) => p.id === state.activeProjectId)) {
       state.activeProjectId = state.projects[0]?.id ?? null;
     }
-    // Each project carries a default priority level (used as the default for new tasks).
+    // Each project carries a default priority level (used as the default for new tasks)
+    // and an archived flag.
     state.projects.forEach((p) => {
       if (!['High', 'Medium', 'Low'].includes(p.priority)) p.priority = 'Medium';
+      if (typeof p.archived !== 'boolean') p.archived = false;
     });
+    // Prefer keeping the active project on a non-archived one.
+    const liveP = state.projects.filter((p) => !p.archived);
+    if (liveP.length && !liveP.some((p) => p.id === state.activeProjectId)) {
+      state.activeProjectId = liveP[0].id;
+    }
     // Migrate older tasks that predate the Eisenhower fields.
     state.tasks.forEach((t) => {
       if (typeof t.important !== 'boolean') t.important = t.priority === 'High';
@@ -155,9 +164,11 @@
       if (typeof t.estimateMin !== 'number' || t.estimateMin <= 0) t.estimateMin = null;
       if (typeof t.label !== 'string') t.label = '';
     });
-    // Clean up stale todayTaskIds.
+    // Clean up stale today/tomorrow task ids.
     const taskIds = new Set(state.tasks.map((t) => t.id));
     state.todayTaskIds = state.todayTaskIds.filter((id) => taskIds.has(id));
+    if (!Array.isArray(state.tomorrowTaskIds)) state.tomorrowTaskIds = [];
+    state.tomorrowTaskIds = state.tomorrowTaskIds.filter((id) => taskIds.has(id));
 
     if (!Array.isArray(state.customQuotes)) state.customQuotes = [];
     if (!Array.isArray(state.hiddenQuotes)) state.hiddenQuotes = [];
@@ -388,7 +399,10 @@
       state.todayArchive.push({ date: state.todayStamp, total: state.todayTaskIds.length, done });
       if (state.todayArchive.length > 60) state.todayArchive = state.todayArchive.slice(-60);
     }
-    state.todayTaskIds = [];
+    // Promote tomorrow's plan into today (then clear tomorrow). Stale ids are
+    // pruned in normalizeState; cap at 5 for safety.
+    state.todayTaskIds = (Array.isArray(state.tomorrowTaskIds) ? state.tomorrowTaskIds : []).slice(0, 5);
+    state.tomorrowTaskIds = [];
     state.todayStamp = key;
     return true;
   }
@@ -423,6 +437,12 @@
   /* ---------- Derived data ---------- */
   const activeProject = () => state.projects.find((p) => p.id === state.activeProjectId) || null;
   const tasksFor = (projectId) => state.tasks.filter((t) => t.projectId === projectId);
+
+  // Archiving: archived projects (and their tasks) drop out of the active views.
+  const isArchived = (pid) => { const p = state.projects.find((x) => x.id === pid); return !!(p && p.archived); };
+  const activeProjects = () => state.projects.filter((p) => !p.archived);
+  const archivedProjects = () => state.projects.filter((p) => p.archived);
+  const liveTasks = () => state.tasks.filter((t) => !isArchived(t.projectId));
 
   /* ============================================================
      SCREEN SWITCHING
@@ -548,14 +568,15 @@
     const list = $('#projectList');
     list.innerHTML = '';
 
-    state.projects.forEach((proj, idx) => {
+    const live = activeProjects();
+    live.forEach((proj, idx) => {
       const tasks = tasksFor(proj.id);
       const total = tasks.length;
       const done = tasks.filter((t) => t.isCompleted).length;
       const pct = total === 0 ? 0 : Math.round((done / total) * 100);
       const isActive = proj.id === state.activeProjectId && screen === 'project';
       const isFirst = idx === 0;
-      const isLast = idx === state.projects.length - 1;
+      const isLast = idx === live.length - 1;
 
       const btn = document.createElement('button');
       btn.className = 'project-item' + (isActive ? ' is-active' : '');
@@ -576,6 +597,9 @@
             <span class="proj-act" title="Rename project" data-action="rename-project" data-id="${proj.id}">
               <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             </span>
+            <span class="proj-act" title="Archive project" data-action="archive-project" data-id="${proj.id}">
+              <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></svg>
+            </span>
             <span class="proj-act proj-act-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
               <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
             </span>
@@ -587,7 +611,40 @@
       list.appendChild(btn);
     });
 
-    $('#projectCount').textContent = `${state.projects.length}`;
+    $('#projectCount').textContent = `${live.length}`;
+
+    // Archived projects section
+    const arch = archivedProjects();
+    const archSec = $('#archivedSection');
+    const archList = $('#archivedList');
+    if (archSec && archList) {
+      archSec.classList.toggle('hidden', arch.length === 0);
+      const cnt = $('#archivedCount');
+      if (cnt) cnt.textContent = arch.length;
+      archList.innerHTML = '';
+      arch.forEach((proj) => {
+        const total = tasksFor(proj.id).length;
+        const isActive = proj.id === state.activeProjectId && screen === 'project';
+        const btn = document.createElement('button');
+        btn.className = 'project-item is-archived' + (isActive ? ' is-active' : '');
+        btn.dataset.id = proj.id;
+        btn.innerHTML = `
+          <span class="proj-main">
+            <span class="project-dot" style="background:var(--faint)"></span>
+            <span class="proj-name truncate">${escapeHTML(proj.name)}</span>
+            <span class="proj-count">${total}</span>
+            <span class="proj-actions">
+              <span class="proj-act" title="Restore project" data-action="unarchive-project" data-id="${proj.id}">
+                <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7M3 7l2-3h14l2 3M3 7h18M12 17V11M9 14l3-3 3 3"/></svg>
+              </span>
+              <span class="proj-act proj-act-del" title="Delete project" data-action="del-project" data-id="${proj.id}">
+                <svg class="w-3.5 h-3.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              </span>
+            </span>
+          </span>`;
+        archList.appendChild(btn);
+      });
+    }
 
     // Update today badge in sidebar
     const badge = $('#todayBadge');
@@ -596,9 +653,37 @@
     badge.classList.toggle('hidden', todayCount === 0);
   }
 
+  function archiveProject(id) {
+    const idx = state.projects.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    if (activeProjects().length <= 1) { toast("You can't archive your only active project"); return; }
+    const proj = state.projects[idx];
+    proj.archived = true;
+    // Move it to the end so active projects stay contiguous (keeps reordering sane).
+    state.projects.splice(idx, 1);
+    state.projects.push(proj);
+    if (state.activeProjectId === id) {
+      state.activeProjectId = activeProjects()[0].id;
+      if (screen === 'project') switchScreen('dashboard');
+    }
+    save();
+    render();
+    toast(`“${proj.name}” archived`);
+  }
+
+  function unarchiveProject(id) {
+    const proj = state.projects.find((p) => p.id === id);
+    if (!proj) return;
+    proj.archived = false;
+    save();
+    render();
+    toast(`“${proj.name}” restored`);
+  }
+
   /* ---------- Dashboard ---------- */
   function renderDashboard() {
-    const allTasks = state.tasks;
+    const projs = activeProjects();
+    const allTasks = liveTasks();
     const total = allTasks.length;
     const done = allTasks.filter((t) => t.isCompleted).length;
     const active = total - done;
@@ -609,7 +694,7 @@
     $('#statActive').textContent = active;
     $('#statOverdue').textContent = overdue;
     $('#statCompletedFoot').textContent = total > 0 ? `${Math.round((done / total) * 100)}% done` : '0% done';
-    $('#statTotalFoot').textContent = `across ${state.projects.length} project${state.projects.length === 1 ? '' : 's'}`;
+    $('#statTotalFoot').textContent = `across ${projs.length} project${projs.length === 1 ? '' : 's'}`;
 
     // Gauge
     const pct = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -619,10 +704,10 @@
     // Bar chart (tasks by project)
     const chartEl = $('#projBarChart');
     chartEl.innerHTML = '';
-    if (state.projects.length === 0) {
+    if (projs.length === 0) {
       chartEl.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No projects yet</p>';
     } else {
-      state.projects.forEach((proj) => {
+      projs.forEach((proj) => {
         const tasks = tasksFor(proj.id);
         const t = tasks.length;
         const d = tasks.filter((x) => x.isCompleted).length;
@@ -698,10 +783,10 @@
     // Projects overview
     const projEl = $('#dashProjects');
     projEl.innerHTML = '';
-    if (state.projects.length === 0) {
+    if (projs.length === 0) {
       projEl.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No projects yet — create one using the form below.</p>';
     } else {
-      state.projects.forEach((proj) => {
+      projs.forEach((proj) => {
         const tasks = tasksFor(proj.id);
         const t = tasks.length;
         const d = tasks.filter((x) => x.isCompleted).length;
@@ -932,6 +1017,8 @@
      CHANGELOG  ("What's new")
      ============================================================ */
   const CHANGELOG = [
+    { v: '3.6', type: 'feature',     title: 'Plan tomorrow',                   desc: 'A “Tomorrow’s Focus” section on the Today screen — line up tomorrow’s tasks the night before and they become today’s focus automatically.' },
+    { v: '3.5', type: 'feature',     title: 'Archive projects',                desc: 'Tuck finished projects away with the archive button — they drop out of your dashboard and lists, and restore in one click. The project add-task form is now tucked behind an “Add task” button too.' },
     { v: '3.4', type: 'feature',     title: 'New “Hugeicons” theme',           desc: 'A fourth theme in Settings → Appearance: a clean, minimal mono-white look with a lime-green accent and Outfit geometric type. Works in light and dark.' },
     { v: '3.3', type: 'feature',     title: 'New “Fly” theme',                 desc: 'A third theme in Settings → Appearance: a structured, modern violet look with Bricolage Grotesque type. Works in light and dark.' },
     { v: '3.2', type: 'feature',     title: 'Add to Today’s Focus from a project', desc: 'Each task in a project now has a Today’s Focus button — tap it to add (or remove) the task to today’s shortlist without leaving the project.' },
@@ -1487,10 +1574,73 @@
       pip.className = `h-1.5 rounded-full transition-all duration-300 ${i < total ? 'bg-indigo-500' : 'bg-slate-100'}`;
       slotsEl.appendChild(pip);
     }
+
+    renderTomorrow();
   }
 
-  /* ---------- Task Picker ---------- */
-  function openTaskPicker() {
+  // Tomorrow's Focus — plan the next day in advance (promoted into Today on rollover).
+  function renderTomorrow() {
+    const listEl = $('#tomorrowList');
+    if (!listEl) return;
+    const tasks = state.tomorrowTaskIds.map((id) => state.tasks.find((t) => t.id === id)).filter(Boolean);
+    const total = tasks.length;
+
+    $('#tomorrowCount').textContent = `${total} / 5`;
+    $('#addTomorrowTask').disabled = total >= 5;
+    $('#tomorrowEmpty').classList.toggle('hidden', total !== 0);
+
+    let html = '';
+    tasks.forEach((task) => {
+      try {
+        const proj = state.projects.find((p) => p.id === task.projectId);
+        html += `
+          <div class="task-row pr-${escapeHTML(task.priority)}" data-id="${escapeHTML(task.id)}">
+            <span class="tm-dot" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="task-title">${escapeHTML(task.title)}</p>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="badge badge-${escapeHTML(task.priority)}">${escapeHTML(task.priority)}</span>
+                ${labelChip(task)}
+                ${estBadge(task)}
+                <span class="text-xs text-slate-400">${escapeHTML(proj ? proj.name : '')}</span>
+              </div>
+            </div>
+            <button class="task-edit" data-action="edit" title="Edit task" aria-label="Edit task">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="task-del" data-action="tomorrow-remove" title="Remove from tomorrow" aria-label="Remove from tomorrow">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>`;
+      } catch (err) { console.error('Skipped a malformed tomorrow task', task, err); }
+    });
+    listEl.innerHTML = html;
+
+    const slotsEl = $('#tomorrowSlots');
+    slotsEl.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+      const pip = document.createElement('div');
+      pip.className = `h-1.5 rounded-full transition-all duration-300 ${i < total ? 'bg-indigo-500' : 'bg-slate-100'}`;
+      slotsEl.appendChild(pip);
+    }
+  }
+
+  function removeFromTomorrow(id) {
+    state.tomorrowTaskIds = state.tomorrowTaskIds.filter((tid) => tid !== id);
+    save();
+    renderTomorrow();
+  }
+
+  /* ---------- Task Picker (shared by Today & Tomorrow) ---------- */
+  let pickerTarget = 'today';
+  const pickerArr = () => (pickerTarget === 'tomorrow' ? state.tomorrowTaskIds : state.todayTaskIds);
+
+  function openTaskPicker(target) {
+    pickerTarget = target === 'tomorrow' ? 'tomorrow' : 'today';
+    const heading = $('#taskPickerHeading');
+    if (heading) heading.textContent = pickerTarget === 'tomorrow' ? 'Plan tomorrow' : "Today's Focus";
     $('#taskPickerModal').classList.remove('hidden');
     const input = $('#taskPickerSearch');
     input.value = '';
@@ -1503,17 +1653,19 @@
   }
 
   function renderTaskPickerList(query) {
-    const slotsLeft = 5 - state.todayTaskIds.length;
+    const arr = pickerArr();
+    const when = pickerTarget === 'tomorrow' ? 'tomorrow' : 'today';
+    const slotsLeft = 5 - arr.length;
     $('#pickerSlotsLeft').textContent = slotsLeft === 0
-      ? 'No slots remaining — today is full!'
-      : `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} remaining`;
+      ? `No slots remaining — ${when} is full!`
+      : `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} remaining for ${when}`;
 
     const listEl = $('#taskPickerList');
     listEl.innerHTML = '';
 
-    // All incomplete tasks not already in today
+    // All incomplete tasks not already in the target list
     let candidates = state.tasks.filter(
-      (t) => !t.isCompleted && !state.todayTaskIds.includes(t.id)
+      (t) => !t.isCompleted && !arr.includes(t.id) && !isArchived(t.projectId)
     );
 
     if (query.trim()) {
@@ -1553,13 +1705,14 @@
           ${task.estimateMin ? `<span class="text-xs font-medium text-slate-400 shrink-0">${escapeHTML(formatEstimate(task.estimateMin))}</span>` : ''}
           <span class="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 shrink-0 transition">Add →</span>`;
         btn.addEventListener('click', () => {
-          if (state.todayTaskIds.length >= 5) { toast('Today is full — max 5 tasks'); return; }
-          state.todayTaskIds.push(task.id);
+          const target = pickerArr();
+          if (target.length >= 5) { toast(`${when === 'tomorrow' ? 'Tomorrow' : 'Today'} is full — max 5 tasks`); return; }
+          target.push(task.id);
           save();
           renderToday();
-          if (state.todayTaskIds.length >= 5) {
+          if (target.length >= 5) {
             closeTaskPicker();
-            toast('Today locked in — let\'s go!');
+            toast(when === 'tomorrow' ? 'Tomorrow planned — nice!' : 'Today locked in — let\'s go!');
           } else {
             renderTaskPickerList($('#taskPickerSearch').value);
           }
@@ -1791,7 +1944,7 @@
   function addProject(name) {
     name = name.trim();
     if (!name) return;
-    const proj = { id: uid(), name, priority: 'Medium' };
+    const proj = { id: uid(), name, priority: 'Medium', archived: false };
     state.projects.push(proj);
     state.activeProjectId = proj.id;
     save();
@@ -1925,7 +2078,7 @@
   function upcomingCounts() {
     let overdue = 0, soon = 0;
     state.tasks.forEach((t) => {
-      if (t.isCompleted || !t.deadline) return;
+      if (t.isCompleted || !t.deadline || isArchived(t.projectId)) return;
       const n = daysUntil(t.deadline);
       if (n < 0) overdue++;
       else if (n <= 7) soon++;
@@ -1957,10 +2110,10 @@
 
     const prRank = { High: 0, Medium: 1, Low: 2 };
     const dated = state.tasks
-      .filter((t) => !t.isCompleted && t.deadline)
+      .filter((t) => !t.isCompleted && t.deadline && !isArchived(t.projectId))
       .sort((a, b) => a.deadline.localeCompare(b.deadline) || (prRank[a.priority] - prRank[b.priority]));
 
-    const noDeadline = state.tasks.filter((t) => !t.isCompleted && !t.deadline).length;
+    const noDeadline = state.tasks.filter((t) => !t.isCompleted && !t.deadline && !isArchived(t.projectId)).length;
 
     // Header stat chips
     const { overdue, soon } = upcomingCounts();
@@ -2027,11 +2180,22 @@
     }
   }
 
+  // Collapsible add-task form (project screen) — hidden until "Add task" is clicked.
+  function setAddTaskCard(show) {
+    const card = $('#addTaskCard');
+    if (!card) return;
+    card.classList.toggle('hidden', !show);
+    const btn = $('#projectAddTaskBtn');
+    if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+    if (show) setTimeout(() => { const ti = $('#taskTitle'); if (ti) ti.focus(); }, 50);
+  }
+
   function selectProject(id) {
     state.activeProjectId = id;
     filter = 'all';
     labelFilter = '';
     syncFilterChips();
+    setAddTaskCard(false); // start collapsed each time a project is opened
     save();
     switchScreen('project');
     render();
@@ -2065,10 +2229,11 @@
     return p && ['High', 'Medium', 'Low'].includes(p.priority) ? p.priority : 'Medium';
   }
   function openQuickAdd() {
-    if (state.projects.length === 0) return;
+    const opts = activeProjects();
+    if (opts.length === 0) { toast('Create or restore a project first'); return; }
     const sel = $('#quickAddProject');
-    sel.innerHTML = state.projects.map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
-    sel.value = state.activeProjectId || state.projects[0].id;
+    sel.innerHTML = opts.map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+    sel.value = (opts.some((p) => p.id === state.activeProjectId) ? state.activeProjectId : opts[0]?.id) || '';
     $('#quickAddTitle').value = '';
     $('#quickAddPriority').value = quickAddProjectPriority(sel.value);
     $('#quickAddDeadline').value = defaultDeadline();
@@ -2390,23 +2555,31 @@
       input.value = '';
     });
 
-    // --- Project list (sidebar) ---
-    $('#projectList').addEventListener('click', (e) => {
+    // --- Project list (sidebar) — active + archived ---
+    const handleProjectListClick = (e) => {
       const act = e.target.closest('[data-action]');
       if (act) {
         e.stopPropagation();
         if (act.dataset.disabled === '1') return;
         const id = act.dataset.id;
         switch (act.dataset.action) {
-          case 'del-project':    deleteProject(id); break;
-          case 'rename-project': openRenameProject(id); break;
-          case 'move-up':        moveProject(id, 'up'); break;
-          case 'move-down':      moveProject(id, 'down'); break;
+          case 'del-project':       deleteProject(id); break;
+          case 'rename-project':    openRenameProject(id); break;
+          case 'move-up':           moveProject(id, 'up'); break;
+          case 'move-down':         moveProject(id, 'down'); break;
+          case 'archive-project':   archiveProject(id); break;
+          case 'unarchive-project': unarchiveProject(id); break;
         }
         return;
       }
       const item = e.target.closest('.project-item');
       if (item) selectProject(item.dataset.id);
+    };
+    $('#projectList').addEventListener('click', handleProjectListClick);
+    $('#archivedList').addEventListener('click', handleProjectListClick);
+    $('#archivedToggle').addEventListener('click', () => {
+      $('#archivedList').classList.toggle('hidden');
+      $('#archivedChevron').classList.toggle('rotate-180');
     });
 
     // --- Delete active project ---
@@ -2433,6 +2606,13 @@
         btn.dataset.on = btn.dataset.on === 'true' ? 'false' : 'true';
       });
     });
+
+    // --- Reveal / collapse the project add-task form ---
+    $('#projectAddTaskBtn').addEventListener('click', () => {
+      setAddTaskCard($('#addTaskCard').classList.contains('hidden'));
+    });
+    const emptyAdd = $('#emptyAddTaskBtn');
+    if (emptyAdd) emptyAdd.addEventListener('click', () => setAddTaskCard(true));
 
     // --- Add task ---
     $('#addTaskForm').addEventListener('submit', (e) => {
@@ -2524,8 +2704,20 @@
     document.addEventListener('webkitfullscreenchange', syncFullscreenBtn);
 
     // --- Today: pick tasks ---
-    $('#addTodayTask').addEventListener('click', openTaskPicker);
-    $('#addTodayTaskEmpty').addEventListener('click', openTaskPicker);
+    $('#addTodayTask').addEventListener('click', () => openTaskPicker('today'));
+    $('#addTodayTaskEmpty').addEventListener('click', () => openTaskPicker('today'));
+    $('#addTomorrowTask').addEventListener('click', () => openTaskPicker('tomorrow'));
+    $('#addTomorrowTaskEmpty').addEventListener('click', () => openTaskPicker('tomorrow'));
+
+    // --- Tomorrow's Focus list interactions ---
+    $('#tomorrowList').addEventListener('click', (e) => {
+      const action = e.target.closest('[data-action]');
+      const row = e.target.closest('.task-row');
+      if (!action || !row) return;
+      const id = row.dataset.id;
+      if (action.dataset.action === 'tomorrow-remove') removeFromTomorrow(id);
+      if (action.dataset.action === 'edit') openEditTask(id);
+    });
 
     // --- Task picker ---
     $('#taskPickerClose').addEventListener('click', closeTaskPicker);

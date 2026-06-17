@@ -123,12 +123,18 @@
         <h2 class="lp-h2">Everything you need to actually finish</h2>
         <p class="lp-h2-sub">Not another endless to-do list — a calm system that helps you decide, focus, and follow through.</p>
         <div class="lp-grid">
-          <div class="lp-card"><div class="lp-ico">✅</div><h3>Today’s Focus</h3><p>Pull up to 5 tasks from any project into one daily shortlist — and start every morning with a clean slate.</p></div>
-          <div class="lp-card"><div class="lp-ico">🎯</div><h3>Eisenhower Matrix</h3><p>Sort by important vs urgent and instantly know what to <i>do</i> first, schedule, delegate, or simply drop.</p></div>
+          <div class="lp-card"><div class="lp-ico">✅</div><h3>Today’s Focus</h3><p>Pull up to 5 tasks from any project into one daily shortlist — it resets every morning so each day starts clean.</p></div>
+          <div class="lp-card"><div class="lp-ico">🌙</div><h3>Plan tomorrow</h3><p>Line up tomorrow’s 5 tasks the night before; they become your Today’s Focus automatically when the day flips.</p></div>
+          <div class="lp-card"><div class="lp-ico">🎯</div><h3>Eisenhower Matrix</h3><p>Flag tasks important and urgent to instantly see what to <i>do</i> first, schedule, delegate, or simply drop.</p></div>
           <div class="lp-card"><div class="lp-ico">📅</div><h3>What’s coming up</h3><p>Every deadline from every project in one timeline, soonest first — so nothing ever slips through again.</p></div>
-          <div class="lp-card"><div class="lp-ico">📊</div><h3>Visible momentum</h3><p>Live gauges and per-project bars turn quiet effort into progress you can actually see and feel.</p></div>
-          <div class="lp-card"><div class="lp-ico">☁️</div><h3>Syncs everywhere</h3><p>Sign in with Google and your tasks follow you across phone, tablet and laptop — automatically.</p></div>
-          <div class="lp-card"><div class="lp-ico">🌙</div><h3>Yours, your way</h3><p>Two beautiful themes, dark mode, rotating reminders, and an installable app that works fully offline.</p></div>
+          <div class="lp-card"><div class="lp-ico">🗂️</div><h3>Projects &amp; priorities</h3><p>Group work into projects, give each a priority, and archive the ones you’re done with to keep things tidy.</p></div>
+          <div class="lp-card"><div class="lp-ico">🏷️</div><h3>Labels, sort &amp; search</h3><p>Tag tasks with labels, add time estimates, then sort and search to find exactly what you need in a tap.</p></div>
+          <div class="lp-card"><div class="lp-ico">📊</div><h3>Visible momentum</h3><p>Live gauges, per-project bars and streak tracking turn quiet effort into progress you can actually feel.</p></div>
+          <div class="lp-card"><div class="lp-ico">🔔</div><h3>Smart reminders</h3><p>Overdue and due-soon alerts (with optional browser notifications) plus rotating motivation keep you moving.</p></div>
+          <div class="lp-card"><div class="lp-ico">☁️</div><h3>Syncs everywhere</h3><p>Sign in with Google and your tasks follow you across phone, tablet and laptop — automatically and privately.</p></div>
+          <div class="lp-card"><div class="lp-ico">🎨</div><h3>Four themes + dark</h3><p>Pick the look that fits you — Hugeicons, Ink &amp; Amber, Periwinkle or Fly — each with a full dark mode.</p></div>
+          <div class="lp-card"><div class="lp-ico">📲</div><h3>Installable &amp; offline</h3><p>Add it to your home screen for a full-screen app that keeps working with no connection and syncs when you’re back.</p></div>
+          <div class="lp-card"><div class="lp-ico">⚡</div><h3>Quick capture</h3><p>Add a task to any project in seconds from the dashboard, or send any task straight to today’s focus.</p></div>
         </div>
       </section>
 
@@ -261,6 +267,16 @@
             <span id="projectCount" class="text-xs text-slate-400"></span>
           </div>
           <nav id="projectList" class="space-y-1"></nav>
+        </div>
+
+        <!-- Archived projects -->
+        <div id="archivedSection" class="hidden">
+          <button id="archivedToggle" class="w-full flex items-center gap-1.5 px-2 mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 transition">
+            <svg id="archivedChevron" class="w-3.5 h-3.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            <span>Archived</span>
+            <span id="archivedCount" class="text-slate-400 normal-case">0</span>
+          </button>
+          <nav id="archivedList" class="hidden space-y-1"></nav>
         </div>
       </div>
 
@@ -568,6 +584,42 @@
               <div id="todaySlots" class="grid grid-cols-5 gap-2 mt-4"></div>
             </section>
 
+            <!-- Tomorrow's Focus · plan the next day -->
+            <section class="panel">
+              <div class="panel-head">
+                <div class="min-w-0">
+                  <h3 class="panel-title flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+                    Tomorrow's Focus
+                  </h3>
+                  <p class="text-xs text-slate-400 mt-0.5">Plan the day before — these become your Today's Focus tomorrow.</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span id="tomorrowCount" class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">0 / 5</span>
+                  <button id="addTomorrowTask" class="dash-btn-ghost">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Pick
+                  </button>
+                </div>
+              </div>
+
+              <div id="tomorrowList" class="space-y-2.5 mt-1"></div>
+
+              <div id="tomorrowEmpty" class="text-center py-8">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 ring-1 ring-indigo-100 grid place-items-center mb-3">
+                  <svg class="w-6 h-6 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+                </div>
+                <p class="text-slate-600 font-semibold text-sm">Plan ahead for a calmer morning</p>
+                <p class="text-xs text-slate-400 mt-1">Pick up to 5 tasks to focus on tomorrow.</p>
+                <button id="addTomorrowTaskEmpty" class="dash-btn-primary mt-4 mx-auto">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Plan tomorrow
+                </button>
+              </div>
+
+              <div id="tomorrowSlots" class="grid grid-cols-5 gap-2 mt-4"></div>
+            </section>
+
           </div>
 
           <!-- ===================== UPCOMING / DEADLINES SCREEN ===================== -->
@@ -608,6 +660,10 @@
                 <p id="activeProjectMeta" class="text-slate-500 mt-1">Plan, prioritize, and accomplish your tasks with ease.</p>
               </div>
               <div class="flex items-center gap-2 shrink-0">
+                <button id="projectAddTaskBtn" class="dash-btn-primary" aria-expanded="false" aria-controls="addTaskCard" title="Add a task to this project">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Add task
+                </button>
                 <button id="renameProjectBtn" class="dash-btn-ghost" title="Edit this project">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                   <span class="hidden sm:inline">Edit</span>
@@ -644,7 +700,7 @@
             </section>
 
             <!-- Add task card -->
-            <section class="soft-card bg-white rounded-2xl border border-slate-200/80 p-5">
+            <section id="addTaskCard" class="hidden soft-card bg-white rounded-2xl border border-slate-200/80 p-5">
               <form id="addTaskForm" class="space-y-3">
                 <input id="taskTitle" type="text" required maxlength="120" placeholder="What needs to be done?"
                   class="w-full px-4 py-3 rounded-xl2 border border-slate-200 bg-slate-50 text-[15px]
@@ -682,8 +738,8 @@
                 <datalist id="labelOptions"></datalist>
                 <div class="flex items-center gap-2 flex-wrap pt-1">
                   <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
-                  <button type="button" id="newImportant" data-on="false" class="tag-toggle">★ Important</button>
-                  <button type="button" id="newUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+                  <button type="button" id="newImportant" data-on="false" class="tag-toggle t-imp">★ Important</button>
+                  <button type="button" id="newUrgent" data-on="false" class="tag-toggle t-urg">⚡ Urgent</button>
                   <button type="submit" class="add-task-btn ml-auto">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                     Add Task
@@ -747,7 +803,11 @@
                 <svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               </div>
               <p id="emptyStateText" class="text-slate-500 font-medium">No tasks yet</p>
-              <p class="text-sm text-slate-400">Add your first task above to start tracking progress.</p>
+              <p class="text-sm text-slate-400">Create your first task to start tracking progress.</p>
+              <button id="emptyAddTaskBtn" class="dash-btn-primary mt-4 mx-auto">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Add task
+              </button>
             </div>
 
           </div>
@@ -1240,6 +1300,10 @@
   <div id="taskPickerModal" class="hidden" aria-modal="true" role="dialog">
     <div class="picker-backdrop" id="taskPickerOverlay"></div>
     <div class="picker-sheet">
+      <!-- Heading -->
+      <div class="px-4 pt-3 pb-0 shrink-0">
+        <p id="taskPickerHeading" class="text-sm font-extrabold text-slate-900">Today's Focus</p>
+      </div>
       <!-- Search bar -->
       <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-100 shrink-0">
         <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -1494,8 +1558,8 @@
           </label>
           <div class="flex items-center gap-2 flex-wrap pt-1">
             <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
-            <button type="button" id="quickAddImportant" data-on="false" class="tag-toggle">★ Important</button>
-            <button type="button" id="quickAddUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+            <button type="button" id="quickAddImportant" data-on="false" class="tag-toggle t-imp">★ Important</button>
+            <button type="button" id="quickAddUrgent" data-on="false" class="tag-toggle t-urg">⚡ Urgent</button>
             <button type="submit" class="add-task-btn ml-auto">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
               Add task
@@ -1554,8 +1618,8 @@
           </label>
           <div class="flex items-center gap-2 flex-wrap pt-1">
             <span class="text-xs font-medium text-slate-400 mr-0.5">Eisenhower:</span>
-            <button type="button" id="editImportant" data-on="false" class="tag-toggle">★ Important</button>
-            <button type="button" id="editUrgent" data-on="false" class="tag-toggle">⚡ Urgent</button>
+            <button type="button" id="editImportant" data-on="false" class="tag-toggle t-imp">★ Important</button>
+            <button type="button" id="editUrgent" data-on="false" class="tag-toggle t-urg">⚡ Urgent</button>
             <button type="submit" class="add-task-btn ml-auto">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
               Save changes
