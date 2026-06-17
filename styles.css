@@ -1,13 +1,14 @@
 /* ===== Liyaatodo · theming engine (complements Tailwind) =====
-   Two switchable skins — "amber" (Ink & Amber, default) and "blue"
-   (Periwinkle, the original look) — each with a light and dark mode.
-   Everything below reads from CSS variables; the four blocks here are
-   the only place colours live. `data-theme` on <html> picks the skin,
-   `.dark` picks the mode.  Tailwind's slate/indigo utilities are wired
-   to the --tw-* channel triplets so they re-skin too.                  */
+   Four switchable skins — "hugeicons" (mono-white + lime, DEFAULT),
+   "amber" (Ink & Amber), "blue" (Periwinkle) and "fly" (violet) — each
+   with a light and dark mode. Everything below reads from CSS variables;
+   the blocks here are the only place colours live. `data-theme` on <html>
+   picks the skin, `.dark` picks the mode. Tailwind's slate/indigo
+   utilities are wired to the --tw-* channel triplets so they re-skin too.
+   `:root` carries the default (hugeicons) for the no-data-theme fallback. */
 
-/* ── AMBER · light (default) ───────────────────────────────────────── */
-:root, html[data-theme="amber"] {
+/* ── AMBER · light ─────────────────────────────────────────────────── */
+html[data-theme="amber"] {
   --paper:#f4efe3; --paper-2:#efe7d6; --surface:#fdfaf2; --surface-2:#f6efe0;
   --border:#e7dfcd; --border-soft:#efe8d8;
   --ink:#1c1a17; --ink-soft:#45413a; --muted:#6b665c; --faint:#a39c8d;
@@ -99,7 +100,7 @@ html[data-theme="blue"] {
 }
 
 /* ── AMBER · dark ──────────────────────────────────────────────────── */
-html.dark[data-theme="amber"], html.dark:not([data-theme]) {
+html.dark[data-theme="amber"] {
   --paper:#0f1411; --paper-2:#131a16; --surface:#1a221d; --surface-2:#222b25;
   --border:#2b3a32; --border-soft:#243029;
   --ink:#f3efe6; --ink-soft:#cdc6b8; --muted:#968f80; --faint:#736e64;
@@ -274,8 +275,8 @@ html.dark[data-theme="fly"] {
   --tw-indigo-50:42 33 80; --tw-indigo-100:42 33 80; --tw-indigo-200:58 47 107; --tw-indigo-300:124 58 237; --tw-indigo-400:139 92 246; --tw-indigo-500:167 139 250; --tw-indigo-600:196 181 253; --tw-indigo-700:196 181 253; --tw-indigo-800:221 208 251; --tw-indigo-900:233 225 253;
 }
 
-/* ── HUGEICONS · light (minimal mono-white, lime accent, geometric) ── */
-html[data-theme="hugeicons"] {
+/* ── HUGEICONS · light (DEFAULT · minimal mono-white, lime, geometric) ── */
+:root, html[data-theme="hugeicons"] {
   --paper:#f6f6f4; --paper-2:#ededea; --surface:#ffffff; --surface-2:#f4f4f3;
   --border:#e5e5e5; --border-soft:#efefee;
   --ink:#0a0a0a; --ink-soft:#262626; --muted:#525e66; --faint:#a3a3a3;
@@ -320,8 +321,8 @@ html[data-theme="hugeicons"] {
   --tw-indigo-50:243 249 232; --tw-indigo-100:230 243 207; --tw-indigo-200:205 234 166; --tw-indigo-300:175 230 127; --tw-indigo-400:132 204 22; --tw-indigo-500:101 163 13; --tw-indigo-600:77 124 15; --tw-indigo-700:63 98 18; --tw-indigo-800:54 83 20; --tw-indigo-900:26 46 5;
 }
 
-/* ── HUGEICONS · dark ──────────────────────────────────────────────── */
-html.dark[data-theme="hugeicons"] {
+/* ── HUGEICONS · dark (DEFAULT dark) ───────────────────────────────── */
+html.dark[data-theme="hugeicons"], html.dark:not([data-theme]) {
   --paper:#0c0d0a; --paper-2:#121310; --surface:#161814; --surface-2:#1f211b;
   --border:#2b2e26; --border-soft:#24271f;
   --ink:#f5f5f0; --ink-soft:#d4d4cb; --muted:#9a9d92; --faint:#6b6e63;

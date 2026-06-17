@@ -2685,18 +2685,18 @@
   const SKIN_NAME = { amber: 'Ink & Amber', blue: 'Periwinkle', fly: 'Fly', hugeicons: 'Hugeicons' };
   function currentSkin() {
     const t = document.documentElement.getAttribute('data-theme');
-    return SKINS.includes(t) ? t : 'amber';
+    return SKINS.includes(t) ? t : 'hugeicons';
   }
   function applySkinMeta(skin) {
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', SKIN_META[skin] || SKIN_META.amber);
+    if (meta) meta.setAttribute('content', SKIN_META[skin] || SKIN_META.hugeicons);
   }
   function syncThemeCards() {
     const skin = currentSkin();
     $$('#themePicker [data-skin]').forEach((c) => c.classList.toggle('is-active', c.dataset.skin === skin));
   }
   function setSkin(skin) {
-    if (!SKINS.includes(skin)) skin = 'amber';
+    if (!SKINS.includes(skin)) skin = 'hugeicons';
     document.documentElement.setAttribute('data-theme', skin);
     try { localStorage.setItem('liyaa.skin', skin); } catch {}
     applySkinMeta(skin);

@@ -6,8 +6,8 @@
   "scope": ".",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f4efe3",
-  "theme_color": "#0f5e57",
+  "background_color": "#f6f6f4",
+  "theme_color": "#4d7c0f",
   "icons": [
     {
       "src": "logo-mark.svg",
